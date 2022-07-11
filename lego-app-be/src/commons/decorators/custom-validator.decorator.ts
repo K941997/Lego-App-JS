@@ -30,7 +30,7 @@ import {
   UUIDVersion,
   IsUUID,
 } from 'class-validator';
-import { getValEnumNumber, getValEnumStr } from '../utils';
+import { getValEnumNumber, getValEnumStr } from '../utils/utils';
 import { Default } from './default-value.decorator';
 
 type ValidationEnumOptions = {
