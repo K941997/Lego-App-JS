@@ -29,6 +29,7 @@ import { AudioRepository } from './repository/audio.repository';
 import { AudiosToTopicsRepository } from './repository/audios-to-topics.repository';
 import { UpdateAudioDto } from './dto/req/update-audio.dto';
 import { UpdateAudioTranscriptDto } from './dto/req/update-audio-transcript.dto';
+import { RemoveAudioTopicDto } from './dto/req/remove-audio-topic.dto';
 
 @Injectable()
 export class AudioService {
@@ -319,6 +320,11 @@ export class AudioService {
     if (!resultFist.affected) {
       throw new NotFoundExc('Audio');
     }
+  }
+
+  async removeAudioTopic (data: RemoveAudioTopicDto) {
+    const { audioToTopicId } = data;
+    return this.audiosToTopicsRepository.softDelete(audioToTopicId);
   }
 
   async highlightWords(data: AddHighlightWordDto) {

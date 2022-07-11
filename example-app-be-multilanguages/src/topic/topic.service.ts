@@ -44,9 +44,6 @@ import { VideosToTopicRepository } from './../videos/repositories/videos-to-topi
 @Injectable()
 export class TopicService {
   constructor(
-    @InjectRepository()
-    private TopicEntity,
-    
     private topicTransRepo: TopicTranslationRepository,
     private topicRepository: TopicRepository,
     private translateService: TranslateService,

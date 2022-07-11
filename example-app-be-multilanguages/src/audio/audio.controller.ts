@@ -16,6 +16,7 @@ import { CreateAudioDto } from './dto/req/create-audio.dto';
 import { DeleteAudiosReqDto } from './dto/req/delete-audio.dto';
 import { DeleteHighlightWordDto } from './dto/req/delete-highlight-word.dto';
 import { GetAudioListReqDto } from './dto/req/get-audio-list.req.dto';
+import { RemoveAudioTopicDto } from './dto/req/remove-audio-topic.dto';
 import { UpdateAudioTranscriptDto } from './dto/req/update-audio-transcript.dto';
 import { UpdateAudioDto } from './dto/req/update-audio.dto';
 import { AudioListResDto } from './dto/res/audio-list.res.dto';
@@ -114,6 +115,11 @@ export class AudioController {
     @Body() body: UpdateAudioTranscriptDto,
   ) {
     return this.audioService.updateAudioTranscript(id, body);
+  }
+
+  @Delete('topic')
+  removeTopic(@Body() body: RemoveAudioTopicDto) {
+    return this.audioService.removeAudioTopic(body)
   }
 
   @Delete()
