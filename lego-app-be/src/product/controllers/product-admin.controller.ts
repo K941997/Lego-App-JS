@@ -9,7 +9,7 @@ import {
   Query,
 } from '@nestjs/common';
 import { CreateProductAdminDto } from '../dtos/admin/create-product.dto';
-import { UpdateProductDto } from '../dtos/admin/update-product.dto';
+import { UpdateProductAdminDto } from '../dtos/admin/update-product.dto';
 import { ProductAdminService } from '../services/product-admin.service';
 import { ProductEntity } from './../entities/product.entity';
 import { Pagination } from 'nestjs-typeorm-paginate';
@@ -50,8 +50,11 @@ export class ProductAdminController {
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateProductDto: UpdateProductDto) {
-    return this.productAdminService.update(+id, updateProductDto);
+  update(
+    @Param('id') id: string,
+    @Body() updateProductAdminDto: UpdateProductAdminDto,
+  ) {
+    return this.productAdminService.update(+id, updateProductAdminDto);
   }
 
   @Delete(':id')
