@@ -18,19 +18,26 @@ export class ProductEntity extends BaseEntity {
   slug: string;
 
   @Column()
+  // { unique: true }
   name: string;
 
-  @Column()
+  @Column({
+    nullable: true,
+  })
   image: string;
 
-  @Column()
+  @Column({
+    nullable: true,
+  })
   price: number;
 
-  @Column()
+  @Column({
+    nullable: true,
+  })
   description: string;
 
   @Column({ enum: BooleanEnum, default: BooleanEnum.TRUE })
-  status: BooleanEnum;
+  enabled: BooleanEnum;
 
   @OneToMany(
     () => ProductsToCategoriesEntity,

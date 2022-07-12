@@ -5,6 +5,9 @@ import { ProductModule } from './product/product.module';
 import { CategoryModule } from './category/category.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import dbConfig from '../ormconfig';
+// import { TypeOrmExModule } from './typeorm-repository/typeorm-ex.module';
+import { ProductEntity } from './product/entities/product.entity';
+
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 require('dotenv').config();
 
@@ -19,10 +22,10 @@ require('dotenv').config();
       database: process.env.POSTGRES_DB,
       entities: [],
       synchronize: false,
-      migrationsRun: false,
       autoLoadEntities: true,
       logging: false,
     }),
+    // TypeOrmExModule.forCustomRepository([ProductEntity]),
     ProductModule,
     CategoryModule,
   ],

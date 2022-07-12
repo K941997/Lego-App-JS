@@ -1,4 +1,4 @@
-# 1. Settings:
+###### 1. Settings:
 $ npm install -g @nestjs/cli
 $ nest new project-name
 -> .eslintrc.js:
@@ -8,11 +8,11 @@ $ nest new project-name
     sourceType: 'module',
   },
 
-# 2. Running:
+###### 2. Running:
 $ npm run start:dev (sử dụng sẽ auto nodemon)
 -> Open localhost:3000/
 
-# 3. Tạo tất cả: 
+###### 3. Tạo tất cả: 
   $ nest g resource messages
 
 - Để tạo 1 Module:
@@ -33,48 +33,82 @@ $ npm run start:dev (sử dụng sẽ auto nodemon)
 - Với SQL PostgreSQL (phải + không cần tạo Repository riêng): typeorm hỗ trợ ở Service lấy dữ liệu Database
 - Với NoSQL MongoDB (phải có Repository riêng): không có typeorm hỗ trợ ở Service để lấy dữ liệu Database
 
-# 4. Global:
+###### 4. GlobalPrefix:
 - main.ts:
   app.setGlobalPrefix('api');
 
 
-# 5. Entity: (Model, Thực thể Table in Database)
-- Entity task.entity.ts:
-  @Entity()
-  export class TaskEntity extends BaseEntity {
-    @PrimaryGeneratedColumn()
-    id: number;
+###### 5. Entity: (Model, Thực thể Table in Database)
+- product.entity.ts:
+    import { BaseEntity } from '../../commons/entities/base.entity';
+    import {
+      Column,
+      Entity,
+      OneToMany,
+      PrimaryColumn,
+      PrimaryGeneratedColumn,
+    } from 'typeorm';
+    import { BooleanEnum } from '../../commons/constants/global.constant';
+    import { ProductsToCategoriesEntity } from './products-to-categories.entity';
 
-    @Column()
-    title: string;
+    @Entity({ name: 'product' })
+    export class ProductEntity extends BaseEntity {
+      @PrimaryColumn()
+      key!: string;
 
-    @Column()
-    description: string;
+      @Column()
+      slug: string;
 
-    @Column()
-    status: TaskStatus;
-  }
+      @Column()
+      name: string;
 
-# 6. Repository: (Kho Chứa Thực Thể Entity + Service) (Optional)
+      @Column()
+      image: string;
+
+      @Column()
+      price: number;
+
+      @Column()
+      description: string;
+
+      @Column({ enum: BooleanEnum, default: BooleanEnum.TRUE })
+      status: BooleanEnum;
+
+      @OneToMany(
+        () => ProductsToCategoriesEntity,
+        (productsToCategories) => productsToCategories.product,
+        {
+          cascade: ['insert'],
+        },
+      )
+      productsToCategories: ProductsToCategoriesEntity[];
+    }
+
+
+###### 6. Repository: (Kho Chứa Thực Thể Entity + Service) (Optional)
 - Repository task.repository.ts:
-  import { TaskEntity } from './task.entity';
   import { EntityRepository, Repository } from 'typeorm';
+  import { ProductEntity } from './../entities/product.entity';
 
-  @EntityRepository(TaskEntity)
-  export class TaskRepository extends Repository<TaskEntity> {}
+  @EntityRepository(ProductEntity)
+  export class ProductRepository extends Repository<ProductEntity> {}
 
-# 7. Add TypeOrm To Task.Module (Bắt buộc):
+###### 7. Add TypeOrm To product.module (Bắt buộc):
 - Module tasks.module.ts với custom Repository (Optional):
-  imports: [TypeOrmModule.forFeature([TaskRepository])],
-  controllers: [TasksController],
-  providers: [TasksService],
+  @Module({
+    imports: [
+      TypeOrmModule.forFeature([
+        ProductRepository,
+        ProductsToCategoriesRepository,
+      ]),
+    ],
+    controllers: [ProductAdminController, ProductClientController],
+    providers: [ProductAdminService, ProductClientService],
+  })
+  export class ProductModule {}
 
-- Module tasks.module.ts không có custom Repository (Vote):
-  imports: [TypeOrmModule.forFeature([TaskEntity])],
-  controllers: [TasksController],
-  providers: [TasksService],
 
-# 8. Database - TypeOrm - PostgreSQL - 0.2.45:
+###### 8. Database - TypeOrm - PostgreSQL - 0.2.45:
 $ npm install --save @nestjs/typeorm typeorm pg @nestjs/config
 
 Bản typeorm 0.2.45:
@@ -150,7 +184,7 @@ $ npm run migration:generate ./migrations/init-product
   "typeorm": "^0.2.45",
 
   
-# 9. Validation Pipe CRUD DTO:
+###### 9. Validation Pipe CRUD DTO:
 - Để cài Validate Pipe:
 $ npm i --save class-validator class-transformer
 
@@ -163,8 +197,11 @@ $ npm i --save class-validator class-transformer
 -> Cách 2: Not Global level.controller:
     @Post('create')
     @UsePipes(ValidationPipe)
+    createMessage(@Body() body: MessageDTO) {
+        return this.messagesService.create(body.content);
+    }
 
-- message.dto:
+- example.dto:
     import { IsString } from 'class-validator'
     export class MessageDTO {
         @IsString()
@@ -179,13 +216,68 @@ $ npm i --save class-validator class-transformer
         address: CreateAddressDTO;
     }
 
-- messages.controller:
+- example.controller:
     @Post()
     createMessage(@Body() body: MessageDTO) {
         return this.messagesService.create(body.content);
     }
 
-# 10. CRUD DTO:
+###### 10. CRUD:
+# Create Product:
+- create-product.dto.ts:
+  import {
+    IsString,
+    MinLength,
+    MaxLength,
+    IsOptional,
+    IsNotEmpty,
+    IsNumber,
+    IsEnum,
+  } from 'class-validator';
+  import { BooleanEnum } from '../../commons/constants/global.constant';
+
+  // export enum BooleanEnum { //!cho vào file global.constant
+  //   TRUE = 1, //"Available now" client and admin can see
+  //   FALSE = -1, //"Disable" only admin can see
+  // }
+
+  export class CreateProductDto {
+    @IsString()
+    @MinLength(5)
+    @MaxLength(50)
+    @IsNotEmpty()
+    key: string;
+
+    @IsString()
+    @MinLength(5)
+    @MaxLength(50)
+    @IsNotEmpty()
+    name: string;
+
+    @IsString()
+    @MinLength(50)
+    @MaxLength(255)
+    @IsOptional()
+    image: string;
+
+    @IsNumber()
+    @IsOptional()
+    price: number;
+
+    @IsString()
+    @MinLength(50)
+    @MaxLength(255)
+    @IsOptional()
+    description: string;
+
+    @IsEnum({ enum: BooleanEnum })
+    @IsOptional()
+    status: BooleanEnum;
+  }
+
+- product-admin.service.ts:
+
+
 
 
 
