@@ -7,7 +7,12 @@ import {
   IsNumber,
   IsEnum,
 } from 'class-validator';
-import { BooleanEnum } from '../../../commons/constants/global.constant';
+import {
+  BooleanEnum,
+  StatusEnum,
+} from '../../../commons/constants/global.constant';
+import { IsDefined } from 'class-validator';
+import { Type } from 'class-transformer';
 
 // export enum BooleanEnum { //!cho vào file global.constant
 //   TRUE = 1, //"Available now" client and admin can see
@@ -38,12 +43,16 @@ export class CreateProductAdminDto {
   price: number;
 
   @IsString()
-  @MinLength(50)
+  @MinLength(5)
   @MaxLength(255)
   @IsOptional()
   description: string;
 
-  @IsEnum({ enum: BooleanEnum })
+  @IsEnum(BooleanEnum)
   @IsOptional()
   enabled: BooleanEnum;
+
+  @IsEnum(StatusEnum)
+  @IsOptional()
+  status: StatusEnum;
 }

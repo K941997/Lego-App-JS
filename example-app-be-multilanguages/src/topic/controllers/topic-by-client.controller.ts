@@ -16,7 +16,7 @@ export class TopicByClientController {
   @Get()
   async findAllByClient(
     @Query() params: FindManyTopicDtoClient, //language, no enabled, no slug
-    @Query('page') page: number,
+    @Query('page') page = 1,
     @Query('limit') limit = 10,
   ) {
     limit = limit > 100 ? 100 : limit;

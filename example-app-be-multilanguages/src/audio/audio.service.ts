@@ -30,6 +30,7 @@ import { AudiosToTopicsRepository } from './repository/audios-to-topics.reposito
 import { UpdateAudioDto } from './dto/req/update-audio.dto';
 import { UpdateAudioTranscriptDto } from './dto/req/update-audio-transcript.dto';
 import { RemoveAudioTopicDto } from './dto/req/remove-audio-topic.dto';
+import { Pagination } from 'nestjs-typeorm-paginate';
 
 @Injectable()
 export class AudioService {
@@ -263,13 +264,9 @@ export class AudioService {
     // TODO: Load level and topic relation
     const queryBuilder = this.audioRepository
       .createQueryBuilder('audios')
-      .leftJoinAndSelect('audios.audioThumbnail', 'audioThumbnail')
-      .leftJoinAndSelect('audios.audiosToTopics', 'audiosToTopics')
-      .leftJoinAndSelect('audiosToTopics.topic', 'topic')
-      .leftJoinAndSelect('topic.translates', 'topicTranslations')
-      .leftJoinAndSelect('audios.level', 'level')
-      .leftJoinAndSelect('level.translates', 'levelTranslations');
-
+      .select('audios.id')
+      .groupBy('audios.id')
+      
     let route = baseRoute;
     if (search) {
       queryBuilder.andWhere('audio_code ILIKE :search', {
@@ -292,12 +289,31 @@ export class AudioService {
       route += `?levelKey=${levelKey}`;
     }
 
-    const { items, links, meta } = await paginate<Audio>(queryBuilder, {
+    const result = await paginate<Audio>(queryBuilder, {
       page,
       limit,
       route,
     });
-    return { items, links, meta };
+    
+    return new Pagination<Audio>(
+      await Promise.all(
+        result.items.map(async (audiosHasId) => {
+          const audio = await this.audioRepository
+            .createQueryBuilder('audios')
+            .leftJoinAndSelect('audios.audioThumbnail', 'audioThumbnail')
+            .leftJoinAndSelect('audios.audiosToTopics', 'audiosToTopics')
+            .leftJoinAndSelect('audiosToTopics.topic', 'topic')
+            .leftJoinAndSelect('topic.translates', 'topicTranslations')
+            .leftJoinAndSelect('audios.level', 'level')
+            .leftJoinAndSelect('level.translates', 'levelTranslations')
+            .where('audios.id = :id', { id: audiosHasId.id })
+            .getOne();
+          return audio;
+        }),
+      ),
+      result.meta,
+      result.links,
+    );
   }
 
   async deleteAudios(data: DeleteAudiosReqDto) {

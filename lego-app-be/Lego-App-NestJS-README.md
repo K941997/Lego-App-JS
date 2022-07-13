@@ -60,20 +60,34 @@ $ npm run start:dev (sử dụng sẽ auto nodemon)
       slug: string;
 
       @Column()
+      // { unique: true }
       name: string;
 
-      @Column()
+      @Column({
+        nullable: true,
+      })
       image: string;
 
-      @Column()
+      @Column({
+        nullable: true,
+      })
       price: number;
 
-      @Column()
+      @Column({
+        nullable: true,
+      })
       description: string;
 
       @Column({ enum: BooleanEnum, default: BooleanEnum.TRUE })
-      status: BooleanEnum;
+      enabled: BooleanEnum;
+      // TRUE = 1, FALSE = -1 ("Available now" client and admin can + "Disable" only admin can see)
 
+      @Column({ enum: StatusEnum, default: StatusEnum.AVAILABLE })
+      status: StatusEnum;
+
+      //todo: Themes
+
+      //todo: Categories
       @OneToMany(
         () => ProductsToCategoriesEntity,
         (productsToCategories) => productsToCategories.product,
@@ -222,9 +236,20 @@ $ npm i --save class-validator class-transformer
         return this.messagesService.create(body.content);
     }
 
-###### 10. CRUD:
-# Create Product:
-- create-product.dto.ts:
+###### 10. CRUD (Admin):
+# Constructor in Service:
+- product-admin.service.ts:
+  constructor(
+    // private productRepository: ProductRepository, //!Custom Repository không dùng được ở bản TypeOrm mới 0.3.0
+    // private productRepository: Repository<ProductEntity>,
+    // @Inject('PRODUCT_REPOSITORY')
+    //private productRepository: ProductRepository
+
+    @InjectRepository(ProductEntity)
+    private productRepository: Repository<ProductEntity>,
+  ) {}
+# CREATE Product Admin:
+- create-product-admin.dto.ts:
   import {
     IsString,
     MinLength,
@@ -234,14 +259,22 @@ $ npm i --save class-validator class-transformer
     IsNumber,
     IsEnum,
   } from 'class-validator';
-  import { BooleanEnum } from '../../commons/constants/global.constant';
+  import { BooleanEnum, StatusEnum } from '../../commons/constants/global.constant';
 
-  // export enum BooleanEnum { //!cho vào file global.constant
-  //   TRUE = 1, //"Available now" client and admin can see
-  //   FALSE = -1, //"Disable" only admin can see
-  // }
+  export enum BooleanEnum {
+    TRUE = 1, //show for client and admin can see
+    FALSE = -1, //show for only admin can see
+  }
 
-  export class CreateProductDto {
+  export enum StatusEnum {
+    AVAILABLE = 'available',
+    DISABLE = 'disable',
+    SOLD_OUT = 'sold-out',
+    HARD_TO_FIND = 'hard-to-find',
+  }
+
+
+  export class CreateProductAdminDto {
     @IsString()
     @MinLength(5)
     @MaxLength(50)
@@ -265,17 +298,152 @@ $ npm i --save class-validator class-transformer
     price: number;
 
     @IsString()
-    @MinLength(50)
+    @MinLength(5)
     @MaxLength(255)
     @IsOptional()
     description: string;
 
-    @IsEnum({ enum: BooleanEnum })
+    @IsEnum(BooleanEnum)
     @IsOptional()
-    status: BooleanEnum;
+    enabled: BooleanEnum;
+
+    @IsEnum(StatusEnum)
+    @IsOptional()
+    status: StatusEnum;
   }
 
 - product-admin.service.ts:
+  //!CREATE:
+  async createProductAdmin(
+    createProductAdminDto: CreateProductAdminDto,
+  ): Promise<ProductEntity> {
+    const { key, name, image, price, description, enabled, status } =
+      createProductAdminDto;
+
+    const existProduct = await this.productRepository.findOneBy({ key: key });
+    if (existProduct) {
+      throw new ConflictException(`Duplicate Product`);
+    }
+
+    const newProduct = await this.productRepository.create(
+      createProductAdminDto,
+    );
+    newProduct.slug = this.slugify(key);
+
+    return this.productRepository.save(newProduct);
+  }
+
+- product-admin.controller.ts:
+  //!CREATE:
+  @Post()
+  async createProductAdmin(
+    @Body() createProductAdminDto: CreateProductAdminDto,
+  ): Promise<ProductEntity> {
+    return this.productAdminService.createProductAdmin(createProductAdminDto);
+  }
+
+# GETALL Products Admin:
+  - Problem 1: Hiển thị route thì phải show các slug, enabled, status nếu có chứ ko được hiện undefined
+    + Ví dụ: Không được localhost:/products?slug=undefined&enabled=1&status=available
+  - Problem 2: Paginate limit=10 đếm theo tổng productToCategory chứ ko phải tổng product
+
+- find-all-products-admin.dto.ts:
+  export class FindAllProductsAdminDto {
+    @IsString()
+    @MinLength(1)
+    @MaxLength(255)
+    @IsOptional()
+    slug?: string;
+
+    @IsEnum(BooleanEnum)
+    @Type(() => Number) //để tìm được boolean=number vd: localhost:/product?enabled=1
+    @IsOptional()
+    enabled: BooleanEnum;
+
+    @IsEnum(StatusEnum)
+    @Type(() => String) //để tìm được boolean=string vd: localhost:/product?status=sold-out
+    @IsOptional()
+    status: StatusEnum;
+  }
+
+- product-admin.service.ts:
+  //!GETALL Products Admin:
+  async findAllProductsAdmin(
+    options: IPaginationOptions, //page, limit
+    params: FindAllProductsAdminDto, //slug, enabled, status
+  ): Promise<Pagination<ProductEntity>> {
+    const { slug, enabled, status } = params;
+
+    const queryBuilder = await this.productRepository.createQueryBuilder(
+      'products',
+    );
+    queryBuilder
+      .select('products.key')
+      .groupBy('products.key')
+      .where(() => {
+        //Solution Problem 1: Hiển thị route thì phải show các slug, enabled, status nếu có chứ ko được hiện undefined
+        if (slug) {
+          queryBuilder.andWhere('products.slug LIKE :slug', {
+            slug: `%${slug}`,
+          });
+          options.route += `&slug=${slug}`;
+        }
+        if (status) {
+          queryBuilder.andWhere('products.status LIKE :status', {
+            //LIKE with boolean string
+            status: `%${status}`,
+          });
+          options.route += `&status=${status}`;
+        }
+        if (enabled) {
+          queryBuilder.andWhere('products.enabled = :enabled', {
+            //= with boolean number
+            enabled,
+          });
+          options.route += `&enabled=${enabled}`;
+        }
+      })
+      .orderBy('products.key', 'ASC');
+
+    const result = await paginate<ProductEntity>(queryBuilder, options);
+
+    //Solution Problem 2: Paginate limit=10 đếm theo tổng productToCategory chứ ko phải tổng product
+    return new Pagination<ProductEntity>(
+      await Promise.all(
+        result.items.map(async (productHasKey) => {
+          const product = await this.productRepository
+            .createQueryBuilder('products')
+            // .leftJoinAndSelect('', '')
+            .where('products.key = :key', { key: productHasKey.key })
+            .getOne();
+          return product;
+        }),
+      ),
+      result.meta,
+      result.links,
+    );
+  }
+
+- product-admin.controller.ts:
+  //!GETALL Products Admin:
+  @Get()
+  async findAllProductsAdmin(
+    @Query('page') page = 1,
+    @Query('limit') limit = 10,
+    @Query() params: FindAllProductsAdminDto,
+  ): Promise<Pagination<ProductEntity>> {
+    limit = limit > 100 ? 100 : limit;
+
+    return this.productAdminService.findAllProductsAdmin(
+      {
+        page,
+        limit,
+        route: `http://localhost:${process.env.PORT}/api/admin/products?`,
+      }, //admin có thể không cần route, route cho SEO bên client
+      params,
+    );
+  }
+
 
 
 

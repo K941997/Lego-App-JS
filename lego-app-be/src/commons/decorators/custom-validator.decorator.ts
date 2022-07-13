@@ -402,12 +402,11 @@ export class JustOneOfBaseOnEnumConstraint
   }
 }
 
-type ValidationEnumStringOptions = {
+type ValidationEnumNumberOptions = {
   enum: Record<string, any>;
   required?: boolean;
-  default?: string;
+  default?: number;
 };
-
 export function IsValidEnumNumber(
   opts: ValidationEnumNumberOptions,
 ): PropertyDecorator {
@@ -421,6 +420,11 @@ export function IsValidEnumNumber(
   };
 }
 
+type ValidationEnumStringOptions = {
+  enum: Record<string, any>;
+  required?: boolean;
+  default?: string;
+};
 export function IsValidEnumString(
   opts: ValidationEnumStringOptions,
 ): PropertyDecorator {
@@ -432,9 +436,3 @@ export function IsValidEnumString(
     if (!opts.required) IsOptional()(target, propertyKey);
   };
 }
-
-type ValidationEnumNumberOptions = {
-  enum: Record<string, any>;
-  required?: boolean;
-  default?: number;
-};
