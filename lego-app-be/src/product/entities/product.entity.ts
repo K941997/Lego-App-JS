@@ -15,7 +15,7 @@ import { ProductsToCategoriesEntity } from './products-to-categories.entity';
 @Entity({ name: 'product' })
 export class ProductEntity extends BaseEntity {
   @PrimaryColumn()
-  key!: string;
+  key: string;
 
   @Column()
   slug: string;
