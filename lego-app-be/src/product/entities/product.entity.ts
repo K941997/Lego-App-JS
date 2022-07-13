@@ -6,7 +6,10 @@ import {
   PrimaryColumn,
   PrimaryGeneratedColumn,
 } from 'typeorm';
-import { BooleanEnum } from '../../commons/constants/global.constant';
+import {
+  BooleanEnum,
+  StatusEnum,
+} from '../../commons/constants/global.constant';
 import { ProductsToCategoriesEntity } from './products-to-categories.entity';
 
 @Entity({ name: 'product' })
@@ -38,7 +41,14 @@ export class ProductEntity extends BaseEntity {
 
   @Column({ enum: BooleanEnum, default: BooleanEnum.TRUE })
   enabled: BooleanEnum;
+  // TRUE = 1, FALSE = -1 ("Available now" client and admin can + "Disable" only admin can see)
 
+  @Column({ enum: StatusEnum, default: StatusEnum.AVAILABLE })
+  status: StatusEnum;
+
+  //todo: Themes
+
+  //todo: Categories
   @OneToMany(
     () => ProductsToCategoriesEntity,
     (productsToCategories) => productsToCategories.product,

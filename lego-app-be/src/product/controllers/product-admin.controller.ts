@@ -8,18 +8,19 @@ import {
   Delete,
   Query,
 } from '@nestjs/common';
-import { CreateProductAdminDto } from '../dtos/admin/create-product.dto';
-import { UpdateProductAdminDto } from '../dtos/admin/update-product.dto';
+import { CreateProductAdminDto } from '../dtos/admin/create-product-admin.dto';
+import { UpdateProductAdminDto } from '../dtos/admin/update-product-admin.dto';
 import { ProductAdminService } from '../services/product-admin.service';
 import { ProductEntity } from './../entities/product.entity';
 import { Pagination } from 'nestjs-typeorm-paginate';
-import { FindAllProductsAdminDto } from './../dtos/admin/find-all-products.dto';
-import { FindOneProductAdminDto } from './../dtos/admin/find-one-product.dto';
+import { FindAllProductsAdminDto } from '../dtos/admin/find-all-products-admin.dto';
+import { FindOneProductAdminDto } from '../dtos/admin/find-one-product-admin.dto';
 
-@Controller('admin/product')
+@Controller('admin/products')
 export class ProductAdminController {
   constructor(private readonly productAdminService: ProductAdminService) {}
 
+  //!CREATE Product Admin:
   @Post()
   async createProductAdmin(
     @Body() createProductAdminDto: CreateProductAdminDto,
@@ -27,6 +28,7 @@ export class ProductAdminController {
     return this.productAdminService.createProductAdmin(createProductAdminDto);
   }
 
+  //!GETALL Products Admin:
   @Get()
   async findAllProductsAdmin(
     @Query('page') page = 1,
@@ -36,11 +38,16 @@ export class ProductAdminController {
     limit = limit > 100 ? 100 : limit;
 
     return this.productAdminService.findAllProductsAdmin(
-      { page, limit, route: 'http://localhost:3000/api/admin/product' }, //admin có thể không cần route, route cho SEO bên client
+      {
+        page,
+        limit,
+        route: `http://localhost:${process.env.PORT}/api/admin/products?`,
+      }, //admin có thể không cần route, route cho SEO bên client
       params,
     );
   }
 
+  //!GETONE Product Admin:
   @Get(':key')
   async findOne(
     @Param('key') key: string,
@@ -49,6 +56,7 @@ export class ProductAdminController {
     return this.productAdminService.findOneProductAdmin(key, params);
   }
 
+  //!UPDATEONE:
   @Patch(':id')
   update(
     @Param('id') id: string,
@@ -57,6 +65,7 @@ export class ProductAdminController {
     return this.productAdminService.update(+id, updateProductAdminDto);
   }
 
+  //!DELETEONE:
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.productAdminService.remove(+id);
