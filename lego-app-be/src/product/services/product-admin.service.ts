@@ -1,10 +1,15 @@
-import { Injectable, ConflictException, Inject } from '@nestjs/common';
+import {
+  Injectable,
+  ConflictException,
+  Inject,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreateProductAdminDto } from '../dtos/admin/create-product-admin.dto';
 import { UpdateProductAdminDto } from '../dtos/admin/update-product-admin.dto';
 import * as slug from 'slug';
 import { ProductEntity } from './../entities/product.entity';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, IsNull, In } from 'typeorm';
 import { FindAllProductsAdminDto } from '../dtos/admin/find-all-products-admin.dto';
 import {
   IPaginationOptions,
@@ -107,26 +112,92 @@ export class ProductAdminService {
   }
 
   //!GETONE Product Admin:
-  async findOneProductAdmin(key: string, params: FindOneProductAdminDto) {
-    const { enabled } = params;
+  //Nếu MultiLanguage thì thêm params lang vào dto getone
+  async findOneProductAdmin(key: string) {
     const existProduct = await this.productRepository
       .createQueryBuilder('product')
       .where({
         key,
-        ...(enabled && { enabled }),
       })
       .getOne();
+
+    if (!existProduct) {
+      throw new NotFoundException('Not Found Product');
+    }
 
     return existProduct;
   }
 
-  //!UPDATEONE:
-  update(id: number, updateProductAdminDto: UpdateProductAdminDto) {
-    return `This action updates a #${id} product`;
+  //!UPDATEONE Product Admin:
+  async updateOneProductAdmin(
+    key: string,
+    updateProductAdminDto: UpdateProductAdminDto,
+  ) {
+    const { name, image, price, description, enabled, status } =
+      updateProductAdminDto;
+
+    const existProduct = await this.productRepository.findOneBy({ key: key });
+    if (!existProduct) {
+      throw new NotFoundException('Not Found Product');
+    }
+
+    if (updateProductAdminDto) {
+      existProduct.name = name;
+      existProduct.image = image;
+      existProduct.price = price;
+      existProduct.description = description;
+      existProduct.enabled = enabled;
+      existProduct.status = status;
+    }
+
+    await this.productRepository.save(existProduct);
+    return this.findOneProductAdmin(key); //Nếu multilanguages thì thêm params lang vào dto getone
   }
 
-  //!DELETEONE:
-  remove(id: number) {
-    return `This action removes a #${id} product`;
+  //!DELETEONE Product Admin:
+  async deleteOneProductAdmin(key: string) {
+    //Problem: n-1 Xóa Product phải xóa cả các Relation của Product:
+    //Problem: 1-n Muốn xóa Theme phải xóa hết các Product và Relation Product liên quan đến Theme:
+    //Problem: nếu có bản multilanguages thì phải softDelete:
+    const productToDelete = await this.productRepository.findOneBy({
+      key: key,
+    });
+    if (!productToDelete) {
+      throw new NotFoundException('Not Found Product');
+    }
+
+    return await Promise.all([
+      this.productRepository.softDelete({ key: key, deletedAt: IsNull() }),
+      // this.videosToTopicRepo.softDelete({
+      //   videosId: key,
+      //   deletedAt: IsNull()
+      // }),
+    ]);
+  }
+
+  //!DELETEMULTI Products Admin:
+  async deleteMultiProductsAdmin(keys: string[]) {
+    //Problem: n-1 Xóa Product phải xóa cả các Relation của Product:
+    //Problem: 1-n Muốn xóa Theme phải xóa hết các Product và Relation Product liên quan đến Theme:
+    //Problem: nếu có bản multilanguages thì phải softDelete:
+
+    const [result] = await Promise.all([
+      this.productRepository.softDelete({
+        key: In(keys),
+        deletedAt: IsNull(),
+      }),
+      // this.videosToTopicRepo.softDelete({
+      //   videosId: In(ids),
+      //   deletedAt: IsNull()
+      // }),
+    ]);
+    if (!result.affected) {
+      throw new NotFoundException('Not Found One One Product');
+    }
+    if (result.affected) {
+      return 'Delete Multi Success';
+    }
+
+    return result;
   }
 }
