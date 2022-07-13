@@ -36,10 +36,10 @@ export class FindAllProductsAdminDto {
   @IsEnum(BooleanEnum)
   @Type(() => Number) //để tìm được boolean=number vd: localhost:/product?enabled=1
   @IsOptional()
-  enabled: BooleanEnum;
+  enabled?: BooleanEnum;
 
   @IsEnum(StatusEnum)
   @Type(() => String) //để tìm được boolean=string vd: localhost:/product?status=sold-out
   @IsOptional()
-  status: StatusEnum;
+  status?: StatusEnum;
 }
