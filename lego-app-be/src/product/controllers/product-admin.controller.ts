@@ -7,6 +7,7 @@ import {
   Param,
   Delete,
   Query,
+  ParseArrayPipe,
 } from '@nestjs/common';
 import { CreateProductAdminDto } from '../dtos/admin/create-product-admin.dto';
 import { UpdateProductAdminDto } from '../dtos/admin/update-product-admin.dto';
@@ -49,25 +50,36 @@ export class ProductAdminController {
 
   //!GETONE Product Admin:
   @Get(':key')
-  async findOne(
+  async findOneProductAdmin(
     @Param('key') key: string,
     @Query() params: FindOneProductAdminDto,
   ) {
-    return this.productAdminService.findOneProductAdmin(key, params);
+    return this.productAdminService.findOneProductAdmin(key);
   }
 
-  //!UPDATEONE:
-  @Patch(':id')
-  update(
-    @Param('id') id: string,
+  //!UPDATEONE Product Admin:
+  @Patch(':key')
+  async updateOneProductAdmin(
+    @Param('key') key: string,
     @Body() updateProductAdminDto: UpdateProductAdminDto,
   ) {
-    return this.productAdminService.update(+id, updateProductAdminDto);
+    return this.productAdminService.updateOneProductAdmin(
+      key,
+      updateProductAdminDto,
+    );
   }
 
-  //!DELETEONE:
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.productAdminService.remove(+id);
+  //!DELETEONE Product Admin:
+  @Delete(':key')
+  async deleteOneProductAdmin(@Param('key') key: string) {
+    return this.productAdminService.deleteOneProductAdmin(key);
+  }
+
+  //!DELETEMULTI Products Admin:
+  @Delete()
+  async deleteMultiProductsAdmin(
+    @Query('keys', ParseArrayPipe) keys: string[],
+  ) {
+    return this.productAdminService.deleteMultiProductsAdmin(keys);
   }
 }

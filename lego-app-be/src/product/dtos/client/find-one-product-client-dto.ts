@@ -5,4 +5,4 @@ import {
   StatusEnum,
 } from '../../../commons/constants/global.constant';
 
-export class FindOneProductAdminDto {}
+export class FindOneProductClientDto {}

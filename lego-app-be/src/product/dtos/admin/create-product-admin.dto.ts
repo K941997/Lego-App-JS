@@ -33,7 +33,7 @@ export class CreateProductAdminDto {
   name: string;
 
   @IsString()
-  @MinLength(50)
+  @MinLength(5)
   @MaxLength(255)
   @IsOptional()
   image: string;
