@@ -14,7 +14,7 @@ import {
   StatusEnum,
 } from '../../../commons/constants/global.constant';
 
-export class FindAllProductsAdminDto {
+export class FindAllProductsClientDto {
   // export enum BooleanEnum {
   //   TRUE = 1, //show for client and admin can see
   //   FALSE = -1, //show for only admin can see
@@ -34,7 +34,7 @@ export class FindAllProductsAdminDto {
   slug?: string;
 
   @IsEnum(BooleanEnum)
-  @Type(() => Number) //để tìm được boolean=number vd: localhost:/product?enabled=1
+  @Type(() => Number)
   @IsOptional()
   enabled?: BooleanEnum; //enabled for client = 1, for admin = 1 & -1
 
