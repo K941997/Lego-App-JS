@@ -8,3 +8,14 @@ export enum StatusEnum {
   SOLD_OUT = 'sold-out', //show for both client and admin can see
   HARD_TO_FIND = 'hard-to-find', //show for both client and admin can see
 }
+
+export enum SortKeyEnum {
+  FEATURED = 'FEATURED',
+  PRICE = 'PRICE',
+  RATING = 'RATING', //rating từ người dùng vote sao
+}
+
+export enum SortDirectionEnum {
+  DESC = 'DESC',
+  ASC = 'ASC',
+}

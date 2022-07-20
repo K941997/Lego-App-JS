@@ -1,11 +1,25 @@
 import { Type } from 'class-transformer';
 import { IsEnum, IsNumber, IsOptional } from 'class-validator';
 import { Default } from '../../../commons/decorators/default-value.decorator';
-import { BooleanEnum } from 'src/commons/constants/global.constant';
+import {
+  BooleanEnum,
+  SortDirectionEnum,
+  SortKeyEnum,
+} from '../../../commons/constants/global.constant';
 
-export class FindOneProductClientDto {
+export class FindOneThemeClientDto {
   @IsEnum(BooleanEnum)
   @Type(() => Number) //để tìm được boolean=number vd: localhost:/product?enabled=1
   @IsOptional()
   enabled?: BooleanEnum; //enabled for client = 1, for admin = 1 & -1
+
+  @IsEnum(SortKeyEnum)
+  @Type(() => String)
+  @IsOptional()
+  sortKey?: string;
+
+  @IsEnum(SortDirectionEnum)
+  @Type(() => String)
+  @IsOptional()
+  sortDirection?: string;
 }

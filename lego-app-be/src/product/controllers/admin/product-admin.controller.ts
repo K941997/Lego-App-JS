@@ -9,13 +9,13 @@ import {
   Query,
   ParseArrayPipe,
 } from '@nestjs/common';
-import { CreateProductAdminDto } from '../dtos/admin/create-product-admin.dto';
-import { UpdateProductAdminDto } from '../dtos/admin/update-product-admin.dto';
-import { ProductAdminService } from '../services/product-admin.service';
-import { ProductEntity } from './../entities/product.entity';
+import { CreateProductAdminDto } from '../../dtos/admin/create-product-admin.dto';
+import { UpdateOneProductAdminDto } from '../../dtos/admin/update-product-admin.dto';
+import { ProductAdminService } from '../../services/admin/product-admin.service';
+import { ProductEntity } from '../../entities/product.entity';
 import { Pagination } from 'nestjs-typeorm-paginate';
-import { FindAllProductsAdminDto } from '../dtos/admin/find-all-products-admin.dto';
-import { FindOneProductAdminDto } from '../dtos/admin/find-one-product-admin.dto';
+import { FindAllProductsAdminDto } from '../../dtos/admin/find-all-products-admin.dto';
+import { FindOneProductAdminDto } from '../../dtos/admin/find-one-product-admin.dto';
 
 @Controller('admin/products')
 export class ProductAdminController {
@@ -49,19 +49,19 @@ export class ProductAdminController {
   }
 
   //!GETONE Product Admin:
-  @Get(':key')
+  @Get(':slug')
   async findOneProductAdmin(
-    @Param('key') key: string,
+    @Param('slug') slug: string,
     @Query() params: FindOneProductAdminDto,
   ) {
-    return this.productAdminService.findOneProductAdmin(key);
+    return this.productAdminService.findOneProductAdmin(slug);
   }
 
   //!UPDATEONE Product Admin:
   @Patch(':key')
   async updateOneProductAdmin(
     @Param('key') key: string,
-    @Body() updateProductAdminDto: UpdateProductAdminDto,
+    @Body() updateProductAdminDto: UpdateOneProductAdminDto,
   ) {
     return this.productAdminService.updateOneProductAdmin(
       key,

@@ -19,15 +19,13 @@ import { Type } from 'class-transformer';
 //   FALSE = -1, //"Disable" only admin can see
 // }
 
-export class CreateProductAdminDto {
+export class CreateThemeAdminDto {
   @IsString()
-  @MinLength(5)
   @MaxLength(50)
   @IsNotEmpty()
   key: string;
 
   @IsString()
-  @MinLength(5)
   @MaxLength(50)
   @IsNotEmpty()
   name: string;
@@ -38,10 +36,6 @@ export class CreateProductAdminDto {
   @IsOptional()
   image: string; //todo: nhập File (Chưa làm)
 
-  @IsNumber()
-  @IsOptional()
-  price: number;
-
   @IsString()
   @MinLength(5)
   @MaxLength(255)
@@ -51,13 +45,4 @@ export class CreateProductAdminDto {
   @IsEnum(BooleanEnum)
   @IsOptional()
   enabled: BooleanEnum; //enabled for client = 1, for admin = 1 & -1
-
-  @IsEnum(StatusEnum)
-  @IsOptional()
-  status: StatusEnum;
-
-  @IsString()
-  @IsOptional()
-  @MaxLength(50)
-  themeKey: string;
 }
