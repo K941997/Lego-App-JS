@@ -13,6 +13,8 @@ import { TopicTranslationRepository } from './repositories/topic-translation.rep
 import { UserToTopicsRepository } from '../user/repository/user-to-topics.repository';
 import { AudiosToTopicsRepository } from '../audio/repository/audios-to-topics.repository';
 import { VideosToTopicRepository } from './../videos/repositories/videos-to-topic.repository';
+import { FileRepository } from '../file/file.repository';
+import { FileService } from '../file/file.service';
 
 @Module({
   imports: [
@@ -22,11 +24,12 @@ UtilsModule,
       TopicTranslationRepository,
       UserToTopicsRepository,
       AudiosToTopicsRepository,
-      VideosToTopicRepository
+      VideosToTopicRepository,
+      FileRepository,
     ]),
   ],
   controllers: [TopicByAdminController, TopicByClientController],
-  providers: [TopicService],
+  providers: [TopicService, FileService],
   exports: [TypeOrmModule],
   // providers: [SlugProvider, TopicService]
 })

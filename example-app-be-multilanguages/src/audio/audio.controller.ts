@@ -9,7 +9,11 @@ import {
   Query,
 } from '@nestjs/common';
 import { ApiBody, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { Authenticate, GetUser } from '../common/decorators/auth.decorator';
+import { CheckAbility } from '../common/decorators/checkAbility.decorator';
+import { Action, Resource } from '../common/enums/global.enum';
 import { ManualSerialize } from '../common/interceptors/serialize.interceptor';
+import { User } from '../user/entities/user.entity';
 import { AudioService } from './audio.service';
 import { AddHighlightWordDto } from './dto/req/add-highlight-word.dto';
 import { CreateAudioDto } from './dto/req/create-audio.dto';
@@ -28,23 +32,25 @@ export class AudioController {
   constructor(private readonly audioService: AudioService) {}
 
   @Get()
-  @ApiOperation({ summary: 'Get list audio' })
+  @ApiOperation({ summary: 'Get list podcast' })
   @ApiOkResponse({ type: AudioListResDto })
   @ManualSerialize(AudioListResDto)
-  getVideoList(@Query() query: GetAudioListReqDto): Promise<AudioListResDto> {
+  getPodcastList(@Query() query: GetAudioListReqDto): Promise<AudioListResDto> {
     return this.audioService.getAudioList(query, `audio`);
   }
 
   @Post()
-  @ApiOperation({ summary: 'Save new audio' })
+  @ApiOperation({ summary: 'Save new podcast' })
   @ApiOkResponse({ type: CreateAudioResDto })
   @ManualSerialize(CreateAudioResDto)
+  @CheckAbility({ action: Action.MANAGE, subject: Resource.AUDIO })
   async create(@Body() createAudioDto: CreateAudioDto) {
     return this.audioService.create(createAudioDto);
   }
 
   @Get('/transcribing-status')
   @ApiOperation({ summary: 'Get all transcribing job status based on name' })
+  @CheckAbility({ action: Action.MANAGE, subject: Resource.AUDIO })
   async getListTranscribeJobByName(@Query('name') name: string) {
     return this.audioService.getListAudioTranscriptStatus(name);
   }
@@ -52,37 +58,35 @@ export class AudioController {
   @ApiBody({
     schema: {
       type: 'object',
-      properties: {
-        audioId: {
-          type: 'number',
-        },
-      },
+      properties: { audioId: { type: 'number' } },
     },
   })
   @Post('/convert-to-text')
-  @ApiOperation({ summary: 'Convert audio to text' })
-  async convertAudioToText(@Body('audioId') audioId: number) {
-    return this.audioService.convertAudioToText(audioId);
+  @ApiOperation({ summary: 'Convert podcast to text' })
+  @CheckAbility({ action: Action.MANAGE, subject: Resource.AUDIO })
+  @Authenticate()
+  async convertAudioToText(
+    @GetUser() user: User,
+    @Body('audioId') audioId: number,
+  ) {
+    return this.audioService.convertAudioToText(user, audioId);
   }
 
   @ApiBody({
     schema: {
       type: 'object',
-      properties: {
-        audioId: {
-          type: 'number',
-        },
-      },
+      properties: { audioId: { type: 'number' } },
     },
   })
   @Post('/transript')
-  @ApiOperation({ summary: 'Save audio transcript of transcribed audio' })
+  @ApiOperation({ summary: 'Save podcast transcript of transcribed audio' })
+  @CheckAbility({ action: Action.MANAGE, subject: Resource.AUDIO })
   async createAudioTranscript(@Body('audioId') audioId: number) {
     return this.audioService.saveAudioTranscript(audioId);
   }
 
   @Get(':id')
-  @ApiOperation({ summary: 'Get audio details' })
+  @ApiOperation({ summary: 'Get podcast details' })
   @ApiOkResponse({ type: CreateAudioResDto })
   @ManualSerialize(CreateAudioResDto)
   async getOne(@Param('id') id: number) {
@@ -90,26 +94,30 @@ export class AudioController {
   }
 
   @Patch(':id')
-  @ApiOperation({ summary: 'Update audio' })
+  @ApiOperation({ summary: 'Update podcast' })
   @ApiOkResponse({ type: AudioListResDto })
+  @CheckAbility({ action: Action.MANAGE, subject: Resource.AUDIO })
   async updateAudio(@Param('id') id: number, @Body() body: UpdateAudioDto) {
     return this.audioService.update(id, body);
   }
 
   @Post('/transcript/highlight-words')
-  @ApiOperation({ summary: 'Highlight words in audio transcript' })
+  @ApiOperation({ summary: 'Highlight words in podcast transcript' })
+  @CheckAbility({ action: Action.MANAGE, subject: Resource.AUDIO })
   async highlightWords(@Body() body: AddHighlightWordDto) {
     return this.audioService.highlightWords(body);
   }
 
   @Delete('/transcript/highlight-words')
-  @ApiOperation({ summary: 'Delete single highlight word in audio' })
+  @ApiOperation({ summary: 'Delete single highlight word in podcast' })
+  @CheckAbility({ action: Action.MANAGE, subject: Resource.AUDIO })
   async removeHighlightWords(@Body() body: DeleteHighlightWordDto) {
     return this.audioService.removeHighlightWord(body);
   }
 
   @Patch('/transcript/:id')
-  @ApiOperation({ summary: 'Update audio transcript' })
+  @ApiOperation({ summary: 'Update podcast transcript' })
+  @CheckAbility({ action: Action.MANAGE, subject: Resource.AUDIO })
   async updateAudioTranscript(
     @Param('id') id: number,
     @Body() body: UpdateAudioTranscriptDto,
@@ -118,12 +126,14 @@ export class AudioController {
   }
 
   @Delete('topic')
+  @CheckAbility({ action: Action.MANAGE, subject: Resource.AUDIO })
   removeTopic(@Body() body: RemoveAudioTopicDto) {
-    return this.audioService.removeAudioTopic(body)
+    return this.audioService.removeAudioTopic(body);
   }
 
   @Delete()
-  @ApiOperation({ summary: 'Delete audio' })
+  @CheckAbility({ action: Action.MANAGE, subject: Resource.AUDIO })
+  @ApiOperation({ summary: 'Delete podcast' })
   async deleteAudios(@Body() body: DeleteAudiosReqDto) {
     return this.audioService.deleteAudios(body);
   }

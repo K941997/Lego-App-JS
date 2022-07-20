@@ -10,7 +10,7 @@ export class RegisterResDTO {
   phone: string;
 
   @Expose()
-  address: string;
+  fullname: string;
 
   @Expose()
   firIdToken: string;

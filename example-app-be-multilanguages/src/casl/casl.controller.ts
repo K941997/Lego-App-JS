@@ -8,17 +8,8 @@ import {
   Post,
   Query,
   Req,
-  SetMetadata,
-  UseGuards,
 } from '@nestjs/common';
-import {
-  ApiBearerAuth,
-  ApiBody,
-  ApiOperation,
-  ApiParam,
-  ApiResponse,
-  ApiTags,
-} from '@nestjs/swagger';
+import { ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { CheckAbility } from '../common/decorators/checkAbility.decorator';
 import { PaginateDto } from '../common/dto/req/paginate.dto';
 import { Action, Resource } from '../common/enums/global.enum';
@@ -33,6 +24,7 @@ import { PoliciesDto } from './dto/res/policies.dto';
 
 @Controller('casl')
 @ApiTags('Authorization')
+@CheckAbility({action: Action.MANAGE, subject: Resource.ADMIN})
 export class CaslController {
   constructor(private caslService: CaslService) {}
 

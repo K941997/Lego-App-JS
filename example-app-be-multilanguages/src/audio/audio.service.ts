@@ -31,6 +31,7 @@ import { UpdateAudioDto } from './dto/req/update-audio.dto';
 import { UpdateAudioTranscriptDto } from './dto/req/update-audio-transcript.dto';
 import { RemoveAudioTopicDto } from './dto/req/remove-audio-topic.dto';
 import { Pagination } from 'nestjs-typeorm-paginate';
+import { User } from '../user/entities/user.entity';
 
 @Injectable()
 export class AudioService {
@@ -122,11 +123,39 @@ export class AudioService {
     await this.fileService.findOneOrError(fileId);
     await this.fileService.findOneOrError(audioThumbnailId);
 
-    const audiosToTopics = topicKeys.map((topicKey) =>
-      this.audiosToTopicsRepository.create({
-        topicKey,
-      }),
-    );
+    // remove topic misssing from existed audio
+    const existedAudiosToTopics = await this.audiosToTopicsRepository.find({
+      where: {
+        audioId: id,
+      },
+    });
+    if (existedAudiosToTopics) {
+      existedAudiosToTopics.forEach((topic) => {
+        if (!topicKeys.includes(topic.topicKey)) {
+          this.audiosToTopicsRepository.delete(topic.id);
+        }
+      });
+    }
+    const audiosToTopics = [];
+
+    topicKeys.forEach(async (topicKey) => {
+      const existedAudiosToTopics =
+        await this.audiosToTopicsRepository.findOneOrFail({
+          where: {
+            audioId: id,
+            topicKey,
+          },
+        });
+      if (!existedAudiosToTopics) {
+        audiosToTopics.push(
+          this.audiosToTopicsRepository.create({
+            topicKey,
+          }),
+        );
+      } else {
+        audiosToTopics.push(existedAudiosToTopics);
+      }
+    });
 
     existedAudio.audioCode = audioCode || existedAudio.audioCode;
     existedAudio.audioTypeKey = audioTypeKey || existedAudio.audioTypeKey;
@@ -172,11 +201,12 @@ export class AudioService {
     if (!audioTranscript) throw new NotFoundExc(`Audio transcript not found`);
 
     audioTranscript.content = transcript.content;
-    audioTranscript.startTime = transcript.startTime;
+    audioTranscript.startTime = parseFloat(transcript.startTime);
     return this.audioTranscriptRepository.save(audioTranscript);
   }
 
   async saveAudioTranscript(audioId: number) {
+    console.log('save');
     const audio = await this.audioRepository.findOneOrFail(audioId);
     const data: any = await this.uploadService.getObject(
       `AUDIO-${audio.audioCode}.json`,
@@ -194,7 +224,7 @@ export class AudioService {
 
     preparedData.forEach(async (item) => {
       const createdAudioTranscript = this.audioTranscriptRepository.create({
-        startTime: item.start_time,
+        startTime: parseFloat(item.start_time),
         audioId,
         content: item.content,
       });
@@ -208,7 +238,7 @@ export class AudioService {
     return this.audioToTextService.getListTranscribeJob(jobNameContains);
   }
 
-  async convertAudioToText(audioId: number) {
+  async convertAudioToText(user: User, audioId: number) {
     // validate
     const audio = await this.audioRepository.findOneOrFail(audioId);
     const audioThumbnail = await this.audioThumbnailRepository.findOneOrFail({
@@ -218,6 +248,7 @@ export class AudioService {
       audioThumbnail.fileId,
     );
     const result = await this.startTranscribeJob(
+      user.id,
       audioFile.url,
       audio.audioCode,
       audioFile.type,
@@ -226,11 +257,13 @@ export class AudioService {
   }
 
   async startTranscribeJob(
+    userId: number,
     url: string,
     audioCode: string,
     mediaFormat: SupportFileType,
   ) {
     return this.audioToTextService.createTranscribeJob(
+      userId,
       url,
       audioCode,
       mediaFormat,
@@ -246,6 +279,7 @@ export class AudioService {
       .createQueryBuilder('audios')
       .leftJoinAndSelect('audios.audioHighlightWords', 'audioHighlightWords')
       .leftJoinAndSelect('audios.audioTranscripts', 'audiosTranscripts')
+      .orderBy('audiosTranscripts.startTime', 'ASC')
       .leftJoinAndSelect('audioHighlightWords.evDict', 'evDict')
       .leftJoinAndSelect('audios.audioThumbnail', 'audioThumbnail')
       .leftJoinAndSelect('audioThumbnail.file', 'file')
@@ -264,9 +298,10 @@ export class AudioService {
     // TODO: Load level and topic relation
     const queryBuilder = this.audioRepository
       .createQueryBuilder('audios')
+      .leftJoinAndSelect('audios.audiosToTopics', 'audiosToTopics')
       .select('audios.id')
-      .groupBy('audios.id')
-      
+      .groupBy('audios.id');
+
     let route = baseRoute;
     if (search) {
       queryBuilder.andWhere('audio_code ILIKE :search', {
@@ -294,13 +329,15 @@ export class AudioService {
       limit,
       route,
     });
-    
+
     return new Pagination<Audio>(
       await Promise.all(
         result.items.map(async (audiosHasId) => {
           const audio = await this.audioRepository
             .createQueryBuilder('audios')
             .leftJoinAndSelect('audios.audioThumbnail', 'audioThumbnail')
+            .leftJoinAndSelect('audioThumbnail.file', 'file')
+            .leftJoinAndSelect('audioThumbnail.thumbnail', 'thumbnail')
             .leftJoinAndSelect('audios.audiosToTopics', 'audiosToTopics')
             .leftJoinAndSelect('audiosToTopics.topic', 'topic')
             .leftJoinAndSelect('topic.translates', 'topicTranslations')
@@ -328,9 +365,9 @@ export class AudioService {
         audioId: In(ids),
         deletedAt: IsNull(),
       }),
-      this.audiosToTopicsRepository.softDelete({ 
-        audioId: In(ids), 
-        deletedAt: IsNull() 
+      this.audiosToTopicsRepository.softDelete({
+        audioId: In(ids),
+        deletedAt: IsNull(),
       }),
     ]);
     if (!resultFist.affected) {
@@ -338,7 +375,7 @@ export class AudioService {
     }
   }
 
-  async removeAudioTopic (data: RemoveAudioTopicDto) {
+  async removeAudioTopic(data: RemoveAudioTopicDto) {
     const { audioToTopicId } = data;
     return this.audiosToTopicsRepository.softDelete(audioToTopicId);
   }

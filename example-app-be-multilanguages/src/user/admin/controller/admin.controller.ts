@@ -7,6 +7,8 @@ import {
   ValidationPipe,
 } from '@nestjs/common';
 import { ApiBody, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { CheckAbility } from '../../../common/decorators/checkAbility.decorator';
+import { Action, Resource } from '../../../common/enums/global.enum';
 import { ManualSerialize } from '../../../common/interceptors/serialize.interceptor';
 import { CreateAdminDto } from '../dto/req/create-admin.dto';
 import { LoginTestDto } from '../dto/req/login-test.dto';
@@ -23,6 +25,7 @@ export class AdminController {
   @Post('/create-admin')
   @ApiOperation({ summary: 'Add admin account for only seeding purpose' })
   @ManualSerialize(CreateAdminResDTO)
+  @CheckAbility({ action: Action.MANAGE, subject: Resource.ADMIN })
   create(@Body() body: CreateAdminDto) {
     return this.adminService.create(body);
   }

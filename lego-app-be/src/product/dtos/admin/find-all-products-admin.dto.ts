@@ -12,7 +12,7 @@ import {
 import {
   BooleanEnum,
   StatusEnum,
-} from '../../../commons/constants/global.constant';
+} from '../../../commons/enums/global.constant';
 
 export class FindAllProductsAdminDto {
   // export enum BooleanEnum {
@@ -42,4 +42,7 @@ export class FindAllProductsAdminDto {
   @Type(() => String) //để tìm được boolean=string vd: localhost:/product?status=sold-out
   @IsOptional()
   status?: StatusEnum;
+
+  @IsOptional()
+  sort?: any;
 }

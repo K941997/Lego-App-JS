@@ -25,6 +25,7 @@ export class AudioToTextService {
   }
 
   async createTranscribeJob(
+    userId: number,
     url: string,
     audioCode: string,
     mediaFormat: SupportFileType,
@@ -40,6 +41,7 @@ export class AudioToTextService {
         MediaFileUri: url,
       },
       OutputBucketName: config.s3Bucket, // add folder transcript to this bucket
+      OutputKey: `transcripts/${userId}/${nameJob}.json`,
     };
 
     const data = await this.transcribeClient.send(

@@ -1,4 +1,3 @@
-import { BooleanEnum } from '../../common/constants/global.constant';
 import {
   Column,
   Entity,
@@ -30,9 +29,6 @@ export class Level extends BaseEntity {
     nullable: true,
   })
   description: string;
-
-  @Column({ enum: BooleanEnum, default: BooleanEnum.TRUE })
-  enabled: BooleanEnum;
 
   @OneToMany(
     () => LevelTranslation,

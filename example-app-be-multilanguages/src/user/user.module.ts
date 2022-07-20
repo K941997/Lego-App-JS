@@ -2,9 +2,12 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AudioRepository } from '../audio/repository/audio.repository';
 import { UserToGroupPoliciesRepository } from '../casl/repository/user-to-group-policies.repository';
+import { FileRepository } from '../file/file.repository';
+import { FileService } from '../file/file.service';
 import { LevelRepository } from '../level/repositories/topic.repository';
 import { TopicRepository } from '../topic/repositories/topic.repository';
 import { TopicModule } from '../topic/topic.module';
+import { UtilsModule } from '../utils-module/utils.module';
 import { VideosRepository } from '../videos/repositories/videos.repository';
 import { AdminController } from './admin/controller/admin.controller';
 import { Admin } from './admin/entities/admin.entity';
@@ -40,10 +43,12 @@ import { UserService } from './service/user.service';
       TopicRepository,
       LevelRepository,
       UserToGroupPoliciesRepository,
+      FileRepository,
     ]),
+    UtilsModule,
   ],
   controllers: [UserController, ClientController, AdminController],
-  providers: [UserService, ClientService, AdminService],
+  providers: [UserService, ClientService, AdminService, FileService],
   exports: [UserService],
 })
 export class UserModule {}

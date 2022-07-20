@@ -8,7 +8,7 @@ import {
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { BaseEntity } from '../../common/entities/base.entity';
-import { UserHighlightWords } from '../../highlight/entities/user-highlight-word.entity';
+import { UserHighlightWords } from '../../user-highlight/entities/user-highlight-word.entity';
 import { Level } from '../../level/entities/level.entity';
 import { AudioHighlightWords } from './audio-highlight-words.entity';
 import { AudioThumbnail } from './audio-thumbnail.entity';

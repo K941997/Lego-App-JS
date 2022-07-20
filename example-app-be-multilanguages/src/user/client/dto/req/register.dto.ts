@@ -13,7 +13,7 @@ export class RegisterDTO {
 
   @ApiProperty()
   @IsValidText({ maxLength: 255 })
-  address: string;
+  fullname: string;
 
   @ApiProperty()
   @IsString()

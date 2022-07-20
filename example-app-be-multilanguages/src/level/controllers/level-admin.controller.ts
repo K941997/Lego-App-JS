@@ -7,7 +7,6 @@ import {
   Param,
   Delete,
   Query,
-  NotFoundException,
   Put,
   ParseArrayPipe,
 } from '@nestjs/common';
@@ -19,9 +18,12 @@ import { FindManyLevelsDto, FindOneLevelDto } from '../dto/find-level.dto';
 import { LangEnum } from '../../common/constants/global.constant';
 import { Pagination } from 'nestjs-typeorm-paginate';
 import { ApiTags } from '@nestjs/swagger';
+import { CheckAbility } from '../../common/decorators/checkAbility.decorator';
+import { Action, Resource } from '../../common/enums/global.enum';
 
 @Controller('admin/levels')
 @ApiTags('Level Admin')
+@CheckAbility({action: Action.MANAGE, subject: Resource.LEVEL})
 export class LevelAdminController {
   constructor(private readonly levelService: LevelService) {}
 
@@ -44,24 +46,21 @@ export class LevelAdminController {
     if (!params.lang) {
       params.lang = LangEnum.En;
     }
-    // if (!params.enabled) { params.enabled = BooleanEnum.TRUE }
 
     return this.levelService.findAllByAdmin({ page, limit }, params);
   }
 
   //Admin GETONE Level (MultiLanguage):
-  @Get(':key')
-  // @UsePipes(ValidationPipe)
-  async findOne(@Param('key') key: string, @Query() params: FindOneLevelDto) {
+  @Get(':slug')
+  async findOne(@Param('slug') slug: string, @Query() params: FindOneLevelDto) {
     if (!params.lang) {
       params.lang = LangEnum.En;
     }
-    return this.levelService.findOne(key, params);
+    return this.levelService.findOne(slug, params);
   }
 
   //Admin UPDATEONE Level (MultiLanguage):
   @Put(':key')
-  // @UsePipes(ValidationPipe)
   async update(
     @Param('key') key: string,
     @Body() updateLevelDto: UpdateLevelDto,
@@ -71,8 +70,8 @@ export class LevelAdminController {
 
   //Admin REMOVEONE Level (MultiLanguage):
   @Delete(':key')
-  async remove(@Param() param) {
-    return this.levelService.remove(param.key);
+  async remove(@Param('key') key: string) {
+    return this.levelService.remove(key);
   }
 
   //Admin REMOVEMULTI Levels (MultiLanguage):

@@ -1,8 +1,20 @@
-import { Body, Controller, Delete, Get, Param, ParseArrayPipe, Post, Put, Query } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  ParseArrayPipe,
+  Post,
+  Put,
+  Query,
+} from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 
 import { Pagination } from 'nestjs-typeorm-paginate';
 import { LangEnum } from '../../common/constants/global.constant';
+import { CheckAbility } from '../../common/decorators/checkAbility.decorator';
+import { Action, Resource } from '../../common/enums/global.enum';
 import { CreateTopicDto } from '../dto/create-topic.dto';
 import { FindManyTopicDto, FindTopicDto } from '../dto/find-topic.dto';
 import { UpdateTopicDto } from '../dto/update-topic.dto';
@@ -11,6 +23,7 @@ import { TopicService } from '../topic.service';
 
 @Controller('admin/topics')
 @ApiTags('Topic Admin')
+@CheckAbility({ action: Action.MANAGE, subject: Resource.TOPIC })
 export class TopicByAdminController {
   constructor(private readonly topicService: TopicService) {}
 
@@ -38,14 +51,14 @@ export class TopicByAdminController {
   }
 
   //Admin GETONE Topic (MultiLanguage):
-  @Get(':key')
+  @Get(':slug')
   // @UsePipes(ValidationPipe)
-  async findOne(@Param('key') key: string, @Query() params: FindTopicDto) {
+  async findOne(@Param('slug') slug: string, @Query() params: FindTopicDto) {
     if (!params.lang) {
       params.lang = LangEnum.En;
     }
 
-    return this.topicService.findOne(key, params);
+    return this.topicService.findOne(slug, params);
   }
 
   //Admin UPDATEONE Topic (MultiLanguage):
@@ -60,8 +73,8 @@ export class TopicByAdminController {
 
   //Admin REMOVEONE Topic (MultiLanguage):
   @Delete(':key')
-  async remove(@Param() param) {
-    return this.topicService.remove(param.key);
+  async remove(@Param('key') key: string) {
+    return this.topicService.remove(key);
   }
 
   //Admin REMOVEMULTI Topics (MultiLanguage):

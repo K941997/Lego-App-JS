@@ -1,15 +1,10 @@
 import PaginateDto from '../../common/dtos/paginate.dto';
-import { BooleanEnum, LangEnum } from '../../common/constants/global.constant';
+import { LangEnum } from '../../common/constants/global.constant';
 import {
   IsValidEnumString, IsValidNumber,
 } from '../../common/decorators/custom-validator.decorator';
-import { IsOptional } from 'class-validator';
 
 export class FindManyLevelsDtoClient extends PaginateDto {
   @IsValidEnumString({ enum: LangEnum, required: false })
   lang?: LangEnum; //lang=en
-
-  @IsValidNumber() //can't use IsValidEnumNumber()
-  @IsOptional()
-  enabled?: BooleanEnum;
 }
