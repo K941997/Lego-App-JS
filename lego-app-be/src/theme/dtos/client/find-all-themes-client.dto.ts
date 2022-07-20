@@ -14,7 +14,7 @@ import {
   StatusEnum,
 } from '../../../commons/constants/global.constant';
 
-export class FindAllProductsAdminDto {
+export class FindAllThemesClientDto {
   // export enum BooleanEnum {
   //   TRUE = 1, //show for client and admin can see
   //   FALSE = -1, //show for only admin can see
@@ -37,11 +37,6 @@ export class FindAllProductsAdminDto {
   @Type(() => Number) //để tìm được boolean=number vd: localhost:/product?enabled=1
   @IsOptional()
   enabled?: BooleanEnum; //enabled for client = 1, for admin = 1 & -1
-
-  @IsEnum(StatusEnum)
-  @Type(() => String) //để tìm được boolean=string vd: localhost:/product?status=sold-out
-  @IsOptional()
-  status?: StatusEnum;
 
   @IsOptional()
   sort?: any;

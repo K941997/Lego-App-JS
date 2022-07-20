@@ -7,6 +7,7 @@ import { PostgresConnectionOptions } from 'typeorm/driver/postgres/PostgresConne
 require('dotenv').config();
 
 const dbConfig = new DataSource({
+  //!TypeOrm bản mới 0.3 dùng DataSource
   type: 'postgres',
   host: process.env.POSTGRES_HOST,
   port: +process.env.POSTGRES_PORT,
@@ -19,6 +20,13 @@ const dbConfig = new DataSource({
   // logging: true,
   migrations: ['migrations/*.ts'],
 });
+
+dbConfig
+  .initialize()
+  .then(() => {
+    console.log('Hello');
+  })
+  .catch((error) => console.log(error));
 
 // switch (process.env.NODE_ENV) {
 //   case 'development':

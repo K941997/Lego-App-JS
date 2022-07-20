@@ -2,6 +2,8 @@ import { BaseEntity } from '../../commons/entities/base.entity';
 import {
   Column,
   Entity,
+  JoinColumn,
+  ManyToOne,
   OneToMany,
   PrimaryColumn,
   PrimaryGeneratedColumn,
@@ -11,6 +13,7 @@ import {
   StatusEnum,
 } from '../../commons/constants/global.constant';
 import { ProductsToCategoriesEntity } from './products-to-categories.entity';
+import { ThemeEntity } from './../../theme/entities/theme.entity';
 
 @Entity({ name: 'product' })
 export class ProductEntity extends BaseEntity {
@@ -20,14 +23,14 @@ export class ProductEntity extends BaseEntity {
   @Column()
   slug: string;
 
-  @Column()
-  // { unique: true }
+  @Column({ unique: true })
+  //custom multilanguages 1-n
   name: string;
 
   @Column({
     nullable: true,
   })
-  image: string;
+  image: string; //todo: lấy file (Chưa làm)
 
   @Column({
     nullable: true,
@@ -41,19 +44,24 @@ export class ProductEntity extends BaseEntity {
 
   @Column({ enum: BooleanEnum, default: BooleanEnum.TRUE })
   enabled: BooleanEnum;
-  // TRUE = 1, FALSE = -1 ("Available now" client and admin can + "Disable" only admin can see)
 
   @Column({ enum: StatusEnum, default: StatusEnum.AVAILABLE })
   status: StatusEnum;
 
-  //todo: Themes
+  //todo: Themes 1-n:
+  @Column({ name: 'theme_key', nullable: true })
+  themeKey: string;
 
-  //todo: Categories
+  @ManyToOne(() => ThemeEntity, (theme) => theme.products)
+  @JoinColumn({ name: 'theme_key', referencedColumnName: 'key' }) //@JoinColumn nên cho vào @ManyToOne
+  theme: ThemeEntity;
+
+  //todo: Categories n-n
   @OneToMany(
     () => ProductsToCategoriesEntity,
     (productsToCategories) => productsToCategories.product,
     {
-      cascade: ['insert'],
+      cascade: ['insert'], //cascade nên cho vào @OneToMany
     },
   )
   productsToCategories: ProductsToCategoriesEntity[];

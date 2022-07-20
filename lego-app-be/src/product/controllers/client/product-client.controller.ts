@@ -10,12 +10,12 @@ import {
   ParseArrayPipe,
 } from '@nestjs/common';
 
-import { ProductEntity } from './../entities/product.entity';
+import { ProductEntity } from '../../entities/product.entity';
 import { Pagination } from 'nestjs-typeorm-paginate';
-import { ProductClientService } from '../services/product-client.service';
-import { FindAllProductsClientDto } from '../dtos/client/find-all-products-client.dto';
+import { ProductClientService } from '../../services/client/product-client.service';
+import { FindAllProductsClientDto } from '../../dtos/client/find-all-products-client.dto';
 import { BooleanEnum } from 'src/commons/constants/global.constant';
-import { FindOneProductClientDto } from '../dtos/client/find-one-product-client-dto';
+import { FindOneProductClientDto } from '../../dtos/client/find-one-product-client-dto';
 
 @Controller('client/products')
 export class ProductClientController {
@@ -43,11 +43,13 @@ export class ProductClientController {
   }
 
   //!GETONE Product Client:
-  @Get(':key')
+  @Get(':slug')
   async findOneProductAdmin(
-    @Param('key') key: string,
+    @Param('slug') slug: string,
     @Query() params: FindOneProductClientDto,
   ) {
-    return this.productClientService.findOneProductClient(key);
+    params.enabled = BooleanEnum.TRUE; //enabled for client = 1, for admin = 1 & -1
+
+    return this.productClientService.findOneProductClient(slug, params);
   }
 }

@@ -1,3 +1,57 @@
+###### Solution Problem:
+# (Problems) Repository:
+- Repository Custom 0.2 không hoạt động bản TypeOrm 0.3.0
+- Tạo Repository Custom 0.3:
+  + @Injectable()
+    export class ProductRepository extends Repository<ProductEntity> {
+      constructor(private dataSource: DataSource) {
+        super(ProductEntity, dataSource.createEntityManager());
+      }
+    }
+# (Problems) CREATE: (slug)
+- check existProductKey? (vì unique)
+- existProductName? (vì unique)
+- existThemeKey? (vì relation)
+- tạo slug theo key
+# (Problems) READ ALL:
+- Hiển thị route phải để các slug, enabled, status có giá trị, ko được undefined (where(() => {if else}))
+- Pagination limit = 10 phải đếm theo productKey chứ ko phải productsToCategoriesKey (chia nhỏ ra)
+- (optional) enabled = 1 hiện cho client, enabled = 1, -1 hiện cho admin
+- (optional) hiện tất cả relation liên quan
+- (optional) Client Không có GETALL Products, chỉ có GETONE Product
+# (Problems) READ ONE: (slug)
+- (optional) enabled = 1 hiện cho client, enbaled = 1, -1 hiện cho admin
+- (optional) hiện tất cả relation liên quan
+- (optional) Client GETONE Product -> show thông tin 1 Product
+- (optional) Client GETONE Theme -> show Theme's Products có Pagination, Sort
+- (optional) Client GETONE Category -> show Category's Products có Pagination, Sort
+# (Problems) UPDATE: (key)
+- check existProduct?
+- check existProductName by other Product?
+- check existThemeKey? (các relation liên quan có tồn tại?)
+# (Problems) DELETE: (key)
+- check existProduct?
+- softDelete Product
+- (optional) softDelete MultiLanguages
+- (optional) softDelete các relation liên quan
+
+# (Problems) DELETE MULTIPLES: (keys[])
+- check existProducts?
+- softDelete Products
+- (optional) softDelete MultiLanguages
+- (optional) softDelete các relation liên quan
+- (Đã xong) SoftDelete Multiples Theme bị lỗi chỉ xóa cái đầu tiên (Do không nhập đúng url) (Phải nhập localhost:3000/api/admin/themes?keys=theme a,theme d,theme l thì mới được)
+
+# (Problems) OTHERS:
+- Client: GET Recommended For You Products Client (Lấy 12 cái Products từ các Themes khác nhau, thông qua lượt xem, yêu thích)
+- Client: GET Bestsellers Products Client (Lấy 6 cái Products xếp theo lượt user mua vd: usersToProducts)
+- Client: GET Offers and Promotions Themes Client (Lấy 3 cái Themes createdAt mới nhất)
+- Client: GET Read All About It Categories Client (Lấy 4 cái Categories createdAt mới nhất)
+- Client: GET FEATURED SETS Products Client: (Lấy 13 cái Products createdAt mới nhất)
+- Authentication
+- Authorization
+- Checkout
+
 ###### 1. Settings:
 $ npm install -g @nestjs/cli
 $ nest new project-name
@@ -21,13 +75,10 @@ $ npm run start:dev (sử dụng sẽ auto nodemon)
 - Để tạo 1 Controller(Route) sử dụng các class và decorator:
   $ nest g controller messages
 
-- Để Controller dùng Service phải có:
-  constructor(private readonly tagsService: TagsService) {}
-
 - Để tạo 1 Service(Logic):
   $ nest g service messages
 
-- Để tạo 1 Repository(Lấy dữ liệu Database):
+- Để tạo 1 Repository(Custom):
   Tạo file messages.repository.ts
 
 - Với SQL PostgreSQL (phải + không cần tạo Repository riêng): typeorm hỗ trợ ở Service lấy dữ liệu Database

@@ -7,6 +7,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import dbConfig from '../ormconfig';
 // import { TypeOrmExModule } from './typeorm-repository/typeorm-ex.module';
 import { ProductEntity } from './product/entities/product.entity';
+import { ThemeModule } from './theme/theme.module';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 require('dotenv').config();
@@ -28,6 +29,7 @@ require('dotenv').config();
     // TypeOrmExModule.forCustomRepository([ProductEntity]),
     ProductModule,
     CategoryModule,
+    ThemeModule,
   ],
   controllers: [AppController],
   providers: [AppService],
