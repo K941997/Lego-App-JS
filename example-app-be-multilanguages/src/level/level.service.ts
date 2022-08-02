@@ -9,6 +9,9 @@ import {
   Pagination
 } from 'nestjs-typeorm-paginate';
 import slug from 'slug';
+import { AudioRepository } from '../audio/repository/audio.repository';
+import { UserRepository } from '../user/repository/user.repository';
+import { VideosRepository } from '../videos/repositories/videos.repository';
 import {
   DeepPartial,
   FindConditions,
@@ -32,10 +35,11 @@ import { LevelRepository } from './repositories/topic.repository';
 export class  LevelService {
   constructor(
     private levelRepo: LevelRepository,
-
     private levelTransRepo: LevelTranslationRepository,
-
     private translateService: TranslateService, //i18n
+    private videosRepository: VideosRepository,
+    private userRepository: UserRepository,
+    private audioRepository: AudioRepository,
   ) {}
 
   slugify(key: string) {
@@ -51,7 +55,7 @@ export class  LevelService {
 
   //Admin CREATE Level (MultiLanguage):
   async create(createLevelDto: CreateLevelDto): Promise<Level> {
-    const { key, description, name, lang, enabled } = createLevelDto;
+    const { key, description, name, lang } = createLevelDto;
     //check existTrans of any Level:
     const existTrans = await this.findOneTransWith({ name });
     const levelLocal = await this.translateService.t('main.entity.level'); //i18n
@@ -73,12 +77,8 @@ export class  LevelService {
     options: IPaginationOptions,
     params: FindManyLevelsDto,
   ): Promise<Pagination<Level>> {
-    const { slug, enabled, lang } = params;
-    const opts: FindConditions<Level> = {
-      // boolean 1/-1
-      ...(enabled && { enabled }),
-    };
-    const queryBuilder = await this.levelRepo.createQueryBuilder('level');
+    const { slug, lang } = params;
+    const queryBuilder = this.levelRepo.createQueryBuilder('level');
     queryBuilder
       .innerJoinAndSelect(
         'level.translates',
@@ -89,17 +89,16 @@ export class  LevelService {
         },
       )
       .where((sqb) => {
-        queryBuilder.where(opts);
         if (slug)
           queryBuilder.andWhere('level.slug LIKE :slug', { slug: `%${slug}` });
       })
-      .orderBy('level.key', 'ASC'); // order de duoi cung
+      .orderBy('level.key', 'ASC');
     return paginate<Level>(queryBuilder, options);
   }
 
   //Admin GETONE Level (MultiLanguage):
-  async findOne(key: string, params: FindOneLevelDto) {
-    const { enabled, lang } = params;
+  async findOne(slug: string, params: FindOneLevelDto) {
+    const { lang } = params;
     const existLevel = await this.levelRepo
       .createQueryBuilder('level')
       .innerJoinAndSelect(
@@ -111,8 +110,7 @@ export class  LevelService {
         },
       )
       .where({
-        key,
-        ...(enabled && { enabled }),
+        slug,
       })
       .getOne();
 
@@ -125,8 +123,7 @@ export class  LevelService {
 
   //Admin UPDATEONE Level (MultiLanguage):
   async update(key: string, updateLevelDto: UpdateLevelDto) {
-    //cho hết required: true
-    const { description, enabled, name, lang } = updateLevelDto;
+    const { description, name, lang } = updateLevelDto;
 
     //check existLevel:
     const existLevel = await this.levelRepo.findOne({ key });
@@ -154,9 +151,6 @@ export class  LevelService {
     if (description) {
       existLevel.description = description;
     }
-    if (enabled) {
-      existLevel.enabled = enabled;
-    }
     await this.levelRepo.save(existLevel);
 
     //update Trans:
@@ -168,7 +162,8 @@ export class  LevelService {
     };
 
     await this.levelTransRepo.save(payloadLevelTranslate);
-    return this.findOne(key, { lang: lang });
+
+    return this.findOne(this.slugify(key), { lang: lang });
   }
 
   //Admin REMOVEONE Level (MultiLanguage):
@@ -177,6 +172,22 @@ export class  LevelService {
     if (!levelToDelete) {
       throw new NotFoundException('Level Not Found!');
     }
+
+    const levelInVideo = await this.videosRepository.findOne({ levelKey: key });
+    if (levelInVideo) {
+      throw new ConflictException(`The video is linked to this level!`);
+    }
+
+    const levelInUser = await this.userRepository.findOne({ levelKey: key });
+    if (levelInUser) {
+      throw new ConflictException(`The user is linked to this level!`);
+    }
+
+    const levelInAudio = await this.audioRepository.findOne({ levelKey: key });
+    if (levelInAudio) {
+      throw new ConflictException(`The audio is linked to this level!`);
+    }
+
     return await Promise.all([
       this.levelRepo.softDelete({ key: key, deletedAt: IsNull() }),
       this.levelTransRepo.softDelete({ levelKey: key, deletedAt: IsNull() }),
@@ -185,6 +196,21 @@ export class  LevelService {
 
   //Admin REMOVEMULTI Levels (MultiLanguage):
   async removeMulti(keys: string[]) {
+    const levelInVideo = await this.videosRepository.findOne({ levelKey: In(keys) });
+    if (levelInVideo) {
+      throw new ConflictException(`The video is linked to this level!`);
+    }
+
+    const levelInUser = await this.userRepository.findOne({ levelKey: In(keys) });
+    if (levelInUser) {
+      throw new ConflictException(`The user is linked to this level!`);
+    }
+
+    const levelInAudio = await this.audioRepository.findOne({ levelKey: In(keys) });
+    if (levelInAudio) {
+      throw new ConflictException(`The audio is linked to this level!`);
+    }
+
     const [result] = await Promise.all([
       this.levelRepo.softDelete({ key: In(keys), deletedAt: IsNull() }),
       this.levelTransRepo.softDelete({
@@ -202,10 +228,7 @@ export class  LevelService {
   async findAllByClientNoPagination(
     params: FindManyLevelsDtoClient,
   ): Promise<Level[]> {
-    const { lang, enabled } = params;
-    const opts: FindConditions<Level> = {
-      ...(enabled && { enabled }),
-    };
+    const { lang } = params;
     const queryBuilder = await this.levelRepo
       .createQueryBuilder('level')
       .innerJoinAndSelect(
@@ -216,7 +239,6 @@ export class  LevelService {
           lang,
         },
       )
-      .where(opts)
       .orderBy('level.key', 'ASC')
       .getMany();
 
@@ -228,11 +250,8 @@ export class  LevelService {
     options: IPaginationOptions,
     params: FindManyLevelsDtoClient,
   ): Promise<Pagination<Level>> {
-    const {lang, enabled } = params;
-    const opts: FindConditions<Level> = {
-      ...(enabled && { enabled }),
-    };
-    const queryBuilder = await this.levelRepo.createQueryBuilder('level');
+    const {lang } = params;
+    const queryBuilder = this.levelRepo.createQueryBuilder('level');
     queryBuilder
       .innerJoinAndSelect(
         'level.translates',
@@ -242,7 +261,6 @@ export class  LevelService {
           lang,
         },
       )
-      .where(opts)
       .orderBy('level.key', 'ASC');
 
     return paginate<Level>(queryBuilder, options);

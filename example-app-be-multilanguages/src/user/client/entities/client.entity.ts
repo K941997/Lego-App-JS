@@ -24,5 +24,5 @@ export class Client extends BaseEntity {
   phone: string;
 
   @Column()
-  address: string;
+  fullname: string;
 }

@@ -5,7 +5,7 @@ import {
   MaxLength,
   MinLength,
 } from 'class-validator';
-import { BooleanEnum } from '../../../commons/constants/global.constant';
+import { BooleanEnum } from '../../../commons/enums/global.constant';
 
 export class UpdateOneThemeAdminDto {
   @IsString()

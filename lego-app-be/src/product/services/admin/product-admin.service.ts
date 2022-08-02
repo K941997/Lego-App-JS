@@ -19,8 +19,10 @@ import {
 import { FindOneProductAdminDto } from '../../dtos/admin/find-one-product-admin.dto';
 import { ThemeEntity } from '../../../theme/entities/theme.entity';
 import { ProductRepository } from '../../repositories/product.repository';
-import { ProductsToCategoriesRepository } from '../../repositories/products-to-categories.repository';
+import { ProductToCategoryRepository } from '../../repositories/product-to-category.repository';
 import { ThemeRepository } from '../../../theme/repositories/theme.repository';
+import { CategoryRepository } from './../../../category/repositories/category.repository';
+import { ProductToCategoryEntity } from './../../entities/product-to-category.entity';
 
 @Injectable()
 export class ProductAdminService {
@@ -30,7 +32,9 @@ export class ProductAdminService {
 
     private productRepository: ProductRepository, //!Repository Custom (Can Use)
 
-    private productsToCategoriesRepository: ProductsToCategoriesRepository,
+    private productToCategoryRepository: ProductToCategoryRepository,
+
+    private categoryRepository: CategoryRepository,
 
     private themeRepository: ThemeRepository,
   ) {}
@@ -43,8 +47,17 @@ export class ProductAdminService {
   async createProductAdmin(
     createProductAdminDto: CreateProductAdminDto,
   ): Promise<ProductEntity> {
-    const { key, name, image, price, description, enabled, status, themeKey } =
-      createProductAdminDto;
+    const {
+      key,
+      name,
+      image,
+      price,
+      description,
+      enabled,
+      status,
+      themeKey,
+      categoryKeys,
+    } = createProductAdminDto;
 
     //existProductKey?
     const existProduct = await this.productRepository.findOneBy({ key: key }); //key is unique
@@ -64,7 +77,24 @@ export class ProductAdminService {
       throw new NotFoundException('Not Found Theme');
     }
 
-    const newProduct = this.productRepository.create(createProductAdminDto);
+    //n-n 1-n:
+    const productToCategory = categoryKeys.map((categoryKey) =>
+      this.productToCategoryRepository.create({
+        categoryKey,
+      }),
+    );
+
+    const newProduct = this.productRepository.create({
+      key,
+      name,
+      image,
+      price,
+      description,
+      enabled,
+      status,
+      themeKey,
+      productToCategory,
+    });
     newProduct.slug = this.slugify(key);
 
     return this.productRepository.save(newProduct);
@@ -131,6 +161,8 @@ export class ProductAdminService {
           const product = await this.productRepository
             .createQueryBuilder('product')
             .leftJoinAndSelect('product.theme', 'theme')
+            .leftJoinAndSelect(`product.productToCategory`, `productToCategory`)
+            .leftJoinAndSelect(`productToCategory.category`, `category`)
             .where('product.key = :key', { key: productHasKey.key })
             .getOne();
           return product;
@@ -142,14 +174,12 @@ export class ProductAdminService {
   }
 
   //!GETONE Product Admin:
-  //Nếu MultiLanguage thì thêm params lang vào dto getone
+  //Nếu MultiLanguage thì thêm params lang vào DTO GetOne
   async findOneProductAdmin(slug: string) {
     const existProduct = await this.productRepository
       .createQueryBuilder('product')
       .where({ slug })
-      .leftJoinAndSelect('product.theme', 'theme')
       .getOne();
-
     if (!existProduct) {
       throw new NotFoundException('Not Found Product');
     }
@@ -162,8 +192,16 @@ export class ProductAdminService {
     key: string,
     updateProductAdminDto: UpdateOneProductAdminDto,
   ) {
-    const { name, image, price, description, enabled, status, themeKey } =
-      updateProductAdminDto;
+    const {
+      name,
+      image,
+      price,
+      description,
+      enabled,
+      status,
+      themeKey,
+      categoryKeys,
+    } = updateProductAdminDto;
 
     //existProduct?
     const existProduct = await this.productRepository.findOneBy({ key: key });
@@ -184,6 +222,19 @@ export class ProductAdminService {
     const existTheme = await this.themeRepository.findOneBy({ key: themeKey });
     if (!existTheme) {
       throw new NotFoundException('Not Found Theme');
+    }
+
+    //existCategoryKeys?
+    const existCategory = await this.categoryRepository.findOneBy({
+      key: In(categoryKeys),
+    });
+    if (!existCategory) {
+      throw new NotFoundException(`Not Found 1 Category`);
+    } else {
+      const productToCategory = new ProductToCategoryEntity();
+      productToCategory.productKey = existProduct.key;
+      productToCategory.categoryKey = existCategory.key;
+      existProduct.productToCategory.push(productToCategory);
     }
 
     if (updateProductAdminDto) {
@@ -211,10 +262,10 @@ export class ProductAdminService {
       // })
 
       //Problem: n-n custom 1-n Muốn xóa Category phải xóa hết các Product và Relation Middle liên quan đến Category:
-      // this.productsToCategoriesRepo.softDelete({
-      //   productsId: key,
-      //   deletedAt: IsNull()
-      // }),
+      this.productToCategoryRepository.softDelete({
+        productKey: key,
+        deletedAt: IsNull(),
+      }),
     ]);
 
     if (!result.affected) {
@@ -240,10 +291,10 @@ export class ProductAdminService {
       // })
 
       //Problem: n-n custom 1-n Muốn xóa Category phải xóa hết các Product và Relation Middle liên quan đến Category:
-      // this.productsToCategoriesRepo.softDelete({
-      //   productsId: In(ids),
-      //   deletedAt: IsNull()
-      // }),
+      this.productToCategoryRepository.softDelete({
+        productKey: In(keys),
+        deletedAt: IsNull(),
+      }),
     ]);
     if (!result.affected) {
       throw new NotFoundException('Not Found 1 Product');

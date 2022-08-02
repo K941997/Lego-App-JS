@@ -11,7 +11,7 @@ import { getValEnumStr } from '../../../common/utils';
 
 export class CreateAudioDto {
   @ApiProperty({ required: true })
-  @IsValidText()
+  @IsValidText({ matches: /^[0-9a-zA-Z._-]+/ })
   audioCode: string;
 
   @ApiProperty({ enum: getValEnumStr(AudioType), required: true })

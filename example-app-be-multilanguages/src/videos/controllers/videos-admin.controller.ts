@@ -34,7 +34,7 @@ import { VideosAdminService } from '../services/videos-admin.service';
 // Check ability here
 @Controller(`${PrefixType.ADMIN}/videos`)
 @ApiTags('Videos Admin')
-// @CheckAbility({ action: Action.MANAGE, subject: Resource.VIDEO })
+@CheckAbility({ action: Action.MANAGE, subject: Resource.VIDEO })
 export class VideosAdminController {
   constructor(private videoAdminService: VideosAdminService) {}
 

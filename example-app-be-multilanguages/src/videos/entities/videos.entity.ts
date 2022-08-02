@@ -11,7 +11,7 @@ import {
 } from 'typeorm';
 import { NameConstraintEntity } from '../../common/constants/global.constant';
 import { BaseEntity } from '../../common/entities/base.entity';
-import { UserHighlightWords } from '../../highlight/entities/user-highlight-word.entity';
+import { UserHighlightWords } from '../../user-highlight/entities/user-highlight-word.entity';
 import { Level } from '../../level/entities/level.entity';
 import { YoutubeVideoThumbnail } from '../dtos/common/base.dto';
 import { generateYoutubeLink } from '../utils/helper.util';

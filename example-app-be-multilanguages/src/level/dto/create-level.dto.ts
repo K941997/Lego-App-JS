@@ -15,9 +15,6 @@ export class CreateLevelDto {
   @IsValidText({ minLength: 5, maxLength: 255, required: false })
   description: string;
 
-  @IsValidEnumNumber({ enum: BooleanEnum, required: false })
-  enabled: BooleanEnum;
-
   @IsValidText({ minLength: 5, maxLength: 50, required: true })
   name: string;
 

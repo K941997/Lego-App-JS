@@ -1,23 +1,22 @@
 import { Injectable } from '@nestjs/common';
-import { CreateAdminDto } from '../dto/req/create-admin.dto';
-import { AdminRepository } from '../repository/admin.repository';
-import * as firebase from 'firebase-admin';
 import * as bcrypt from 'bcryptjs';
-import { v4 as uuidv4 } from 'uuid';
-import { AdminLoginDto } from '../dto/req/login.dto';
+import * as firebase from 'firebase-admin';
 import { DecodedIdToken } from 'firebase-admin/lib/auth/token-verifier';
+import { v4 as uuidv4 } from 'uuid';
 import { UserTypeKey } from '../../../common/enums/global.enum';
+import {
+  BadRequestExc,
+  ConflictExc,
+  ForbiddenExc,
+  InternalServerErrorExc,
+} from '../../../common/exceptions/custom.exception';
+import { ClientRepository } from '../../client/repository/client.repository';
 import { UserTypeRepository } from '../../repository/user-type.repository';
 import { UserRepository } from '../../repository/user.repository';
-import { ClientRepository } from '../../client/repository/client.repository';
-import {
-  ConflictExc,
-  InternalServerErrorExc,
-  BadRequestExc,
-} from '../../../common/exceptions/custom.exception';
-import { LoginTestDto } from '../dto/req/login-test.dto';
+import { CreateAdminDto } from '../dto/req/create-admin.dto';
+import { AdminLoginDto } from '../dto/req/login.dto';
+import { AdminRepository } from '../repository/admin.repository';
 // import { initializeApp } from 'firebase/app';
-import { getAuth, signInWithEmailAndPassword } from 'firebase/auth';
 import { UserToGroupPoliciesRepository } from '../../../casl/repository/user-to-group-policies.repository';
 
 @Injectable()

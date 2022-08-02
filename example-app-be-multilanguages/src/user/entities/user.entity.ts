@@ -10,7 +10,7 @@ import {
 } from 'typeorm';
 import { UserToGroupPolicies } from '../../casl/entities/user-to-group-policies.entity';
 import { File } from '../../file/entities/file.entity';
-import { UserHighlightWords } from '../../highlight/entities/user-highlight-word.entity';
+import { UserHighlightWords } from '../../user-highlight/entities/user-highlight-word.entity';
 import { Level } from '../../level/entities/level.entity';
 import { UserSearchs } from '../../search/entities/user-searchs.entity';
 import { Admin } from '../admin/entities/admin.entity';
@@ -37,6 +37,10 @@ export class User extends BaseEntity {
 
   @OneToOne(() => Admin, (admin) => admin.user)
   admin: Admin;
+
+  @OneToOne(() => File, (file) => file.id, { onDelete: 'SET NULL' })
+  @JoinColumn({ name: 'avatar_id' })
+  avatar: File;
 
   @OneToMany(
     () => UserToGroupPolicies,

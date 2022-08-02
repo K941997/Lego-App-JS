@@ -17,8 +17,8 @@ export class AudioTranscript extends BaseEntity {
   @Column({ type: 'jsonb' })
   content: IAudioTranscriptWord[];
 
-  @Column({ name: 'start_time' })
-  startTime: string;
+  @Column({ name: 'start_time', type: 'float' })
+  startTime: number;
 
   @Column({ name: 'audio_id' })
   audioId: number;

@@ -21,6 +21,6 @@ export class AudioRepository extends Repository<Audio> {
     @TransactionManager() transactionManager: EntityManager,
     updatingAudio: SavedAudio,
   ) {
-    return transactionManager.update(Audio, updatingAudio.id, updatingAudio);
+    return transactionManager.save(updatingAudio);
   }
 }

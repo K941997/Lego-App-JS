@@ -9,6 +9,7 @@ import {
   ExpectationFailedExc,
   InternalServerErrorExc,
 } from '../../../common/exceptions/custom.exception';
+import { FileService } from '../../../file/file.service';
 import { VideosRepository } from '../../../videos/repositories/videos.repository';
 import { AdminRepository } from '../../admin/repository/admin.repository';
 import { User } from '../../entities/user.entity';
@@ -19,6 +20,7 @@ import { transformUserToTopicsToTopicKeys } from '../../utils/helper.util';
 import { ChooseLevelTopicDto } from '../dto/req/choose-level-topic.dto';
 import { LoginDTO } from '../dto/req/login.dto';
 import { RegisterDTO } from '../dto/req/register.dto';
+import { UpdateInfoDTO } from '../dto/req/update-info.dto';
 import { ClientRepository } from '../repository/client.repository';
 
 @Injectable()
@@ -31,10 +33,11 @@ export class ClientService {
     private videosRepo: VideosRepository,
     private audioRepo: AudioRepository,
     private userToTopicRepo: UserToTopicsRepository,
+    private fileService: FileService,
   ) {}
 
   async register(body: RegisterDTO) {
-    const { email, phone, address, firIdToken } = body;
+    const { email, phone, fullname, firIdToken } = body;
     const firebaseUser: DecodedIdToken | any = await firebase
       .auth()
       .verifyIdToken(firIdToken);
@@ -84,9 +87,33 @@ export class ClientService {
     return this.clientRepository.save({
       email,
       phone,
-      address,
+      fullname,
       user: newUser,
     });
+  }
+
+  async updateInfo(user: User, body: UpdateInfoDTO) {
+    const { avatarId, email, phone, fullname } = body;
+    const avatar = await this.fileService.findOneOrError(avatarId);
+    user.avatar = avatar;
+    const client = await this.clientRepository.findOneOrFail({ user });
+    await this.userRepository.save(user);
+    await this.clientRepository.save({
+      id: client.id,
+      email,
+      phone,
+      fullname,
+    });
+  }
+
+  async getInfo(user: User) {
+    const qb = this.userRepository
+      .createQueryBuilder('user')
+      .where('user.id = :id', { id: user.id })
+      .leftJoinAndSelect('user.client', 'client')
+      .leftJoinAndSelect('user.avatar', 'avatar')
+      .getOne();
+    return qb;
   }
 
   async login(body: LoginDTO) {
@@ -113,7 +140,7 @@ export class ClientService {
     const topicKeys = transformUserToTopicsToTopicKeys(userToTopics);
     const levelKey = user.levelKey;
 
-    let videoBuilder = this.videosRepo
+    const videoBuilder = this.videosRepo
       .createQueryBuilder('videos')
       .leftJoin('videos.videosToTopics', 'videosToTopics')
       .leftJoin('videosToTopics.topic', 'topic')
@@ -123,7 +150,7 @@ export class ClientService {
       .orderBy('videos.id', 'DESC')
       .take(10);
 
-    let audioBuilder = this.audioRepo
+    const audioBuilder = this.audioRepo
       .createQueryBuilder('audio')
       .leftJoin('audio.audiosToTopics', 'audiosToTopics')
       .leftJoin('audiosToTopics.topic', 'topic')

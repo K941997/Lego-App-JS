@@ -40,7 +40,7 @@ export class FileService {
       throw new InternalServerErrorExc();
     }
 
-    const key = `${objFolder.key}/upload/${user.id}/${randomStr}.${type}`;
+    const key = `${objFolder.key}/${user.id}/${randomStr}.${type}`;
     const baseUrl = `https://s3.${s3Config.region}.amazonaws.com/${s3Config.bucket}`;
     // Create file and save to database
     const params: CreateFileDto = {

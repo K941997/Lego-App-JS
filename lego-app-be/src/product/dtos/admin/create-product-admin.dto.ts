@@ -6,13 +6,16 @@ import {
   IsNotEmpty,
   IsNumber,
   IsEnum,
+  ArrayMaxSize,
+  ArrayUnique,
 } from 'class-validator';
 import {
   BooleanEnum,
   StatusEnum,
-} from '../../../commons/constants/global.constant';
+} from '../../../commons/enums/global.constant';
 import { IsDefined } from 'class-validator';
 import { Type } from 'class-transformer';
+import { ArrayMinSize } from 'class-validator';
 
 // export enum BooleanEnum { //!cho vào file global.constant
 //   TRUE = 1, //"Available now" client and admin can see
@@ -60,4 +63,11 @@ export class CreateProductAdminDto {
   @IsOptional()
   @MaxLength(50)
   themeKey: string;
+
+  @IsString()
+  @ArrayMinSize(1)
+  @ArrayMaxSize(100)
+  @ArrayUnique()
+  @IsOptional()
+  categoryKeys: string[];
 }

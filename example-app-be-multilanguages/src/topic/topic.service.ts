@@ -1,19 +1,13 @@
 import {
-  BadRequestException,
   ConflictException,
   Injectable,
-  InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
 import {
   DeepPartial,
-  DeleteResult,
   In,
   IsNull,
-  Like,
   Not,
-  Repository,
 } from 'typeorm';
 import { CreateTopicDto } from './dto/create-topic.dto';
 import { UpdateTopicDto } from './dto/update-topic.dto';
@@ -32,14 +26,13 @@ import {
 } from '../common/exceptions/custom.exception';
 import { FindManyTopicDto, FindTopicDto } from './dto/find-topic.dto';
 import slug from 'slug';
-import { LangEnum } from '../common/constants/global.constant';
 import { TopicTranslationRepository } from './repositories/topic-translation.repository';
 import { TopicRepository } from './repositories/topic.repository';
 import { FindManyTopicDtoClient } from './dto/find-topic-client.dto';
 import { UserToTopicsRepository } from './../user/repository/user-to-topics.repository';
 import { AudiosToTopicsRepository } from '../audio/repository/audios-to-topics.repository';
 import { VideosToTopicRepository } from './../videos/repositories/videos-to-topic.repository';
-
+import { FileService } from '../file/file.service';
 
 @Injectable()
 export class TopicService {
@@ -49,7 +42,8 @@ export class TopicService {
     private translateService: TranslateService,
     private userToTopicsRepository: UserToTopicsRepository,
     private audiosToTopicsRepository: AudiosToTopicsRepository,
-    private videosToTopicRepository: VideosToTopicRepository
+    private videosToTopicRepository: VideosToTopicRepository,
+    private fileService: FileService
   ) {}
 
   slugify(key: string) {
@@ -65,7 +59,7 @@ export class TopicService {
 
   //Admin CREATE Topic (MultiLanguage):
   async create(createTopicDto: CreateTopicDto): Promise<Topic> {
-    const { key, description, name, lang, enabled } = createTopicDto;
+    const { key, description, name, lang, imageId} = createTopicDto;
     //check existTrans of any Topic:
     const existTranslate = await this.findOneTransWith({ name });
     const topicLocalize = await this.translateService.t('main.entity.topic'); //i18n
@@ -73,8 +67,13 @@ export class TopicService {
     //check existTopic:
     const existTopic = await this.topicRepository.findOne({ key: key });
     if (existTopic) throw new ConflictExc(topicLocalize);
+    //check exist Image Topic:
+    await this.fileService.findOneOrError(imageId);
+     //image Topic:
+     const imageToCreate = await this.fileService.findOneOrError(imageId);
     //create Topic:
     const newTopic = this.topicRepository.create(createTopicDto);
+    newTopic.image = imageToCreate;
     newTopic.slug = this.slugify(key); //slug
     //create trans for Topic:
     const newTopicTranslate = this.topicTransRepo.create(createTopicDto);
@@ -87,10 +86,7 @@ export class TopicService {
     options: IPaginationOptions,
     params: FindManyTopicDto,
   ): Promise<Pagination<Topic>> {
-    const { lang, enabled, slug } = params;
-    const opts: FindConditions<Topic> = {
-      ...(enabled && { enabled }),
-    };
+    const { lang, slug } = params;
     const queryBuilder = this.topicRepository.createQueryBuilder('topic');
     queryBuilder
       .innerJoinAndSelect(
@@ -101,8 +97,8 @@ export class TopicService {
           lang,
         },
       )
+      .leftJoinAndSelect(`topic.image`, `image`)
       .where((queryBuilder) => {
-        queryBuilder.where(opts);
         if (slug)
           queryBuilder.andWhere('topic.slug LIKE :slug', { slug: `%${slug}%` });
       })
@@ -112,8 +108,8 @@ export class TopicService {
   }
 
   //Admin GETONE Topic (MultiLanguage):
-  async findOne(key: string, params: FindTopicDto) {
-    const { lang, enabled } = params;
+  async findOne(slug: string, params: FindTopicDto) {
+    const { lang } = params;
     const existTopic = await this.topicRepository
       .createQueryBuilder('topic')
       .innerJoinAndSelect(
@@ -124,9 +120,9 @@ export class TopicService {
           lang,
         },
       )
+      .leftJoinAndSelect(`topic.image`, `image`)
       .where({
-        key,
-        ...(enabled && { enabled }),
+        slug,
       })
       .getOne();
 
@@ -138,7 +134,7 @@ export class TopicService {
 
   //Admin UPDATEONE Topic (MultiLanguage):
   async update(key: string, updateTopicDto: UpdateTopicDto) {
-    const { description, name, lang, enabled } = updateTopicDto;
+    const { description, name, lang, imageId } = updateTopicDto;
 
     //check existTopic:
     const existTopic = await this.topicRepository.findOne({ key: key });
@@ -161,15 +157,19 @@ export class TopicService {
     if (existTransName)
       throw new ConflictException('Duplicate TransName ' + topicLocal);
 
+    //image Topic:
+    const imageToUpdate = await this.fileService.findOneOrError(imageId);
+    if (imageToUpdate) {
+      existTopic.image = imageToUpdate;
+    }
+
+
     //update Topic:
     //cant update key because it's primary key
     if (description) {
       existTopic.description = description;
     }
-    if (enabled) {
-      existTopic.enabled = enabled;
-    }
-  
+
     await this.topicRepository.save(existTopic);
 
     //update Trans
@@ -181,7 +181,8 @@ export class TopicService {
     };
 
     await this.topicTransRepo.save(payloadTopicTranslate);
-    return this.findOne(key, { lang: lang });
+
+    return this.findOne(this.slugify(key), { lang: lang });
   }
 
   //Admin REMOVEONE Topic (MultiLanguage):
@@ -240,10 +241,7 @@ export class TopicService {
   async findAllByClientNoPagination(
     params: FindManyTopicDtoClient,
   ): Promise<Topic[]> {
-    const { lang, enabled } = params;
-    const opts: FindConditions<Topic> = {
-      ...(enabled && { enabled }),
-    };
+    const { lang } = params;
     const queryBuilder = await this.topicRepository
       .createQueryBuilder('topic')
       .innerJoinAndSelect(
@@ -254,7 +252,7 @@ export class TopicService {
           lang,
         },
       )
-      .where(opts)
+      .leftJoinAndSelect(`topic.image`, `image`)
       .orderBy('topic.key', 'ASC')
       .getMany();
 
@@ -266,11 +264,9 @@ export class TopicService {
     options: IPaginationOptions,
     params: FindManyTopicDtoClient,
   ): Promise<Pagination<Topic>> {
-    const { lang, enabled } = params;
-    const opts: FindConditions<Topic> = {
-      ...(enabled && { enabled }),
-    };
-    const queryBuilder = await this.topicRepository.createQueryBuilder('topic');
+    const { lang } = params;
+
+    const queryBuilder = this.topicRepository.createQueryBuilder('topic');
     queryBuilder
       .innerJoinAndSelect(
         'topic.translates',
@@ -280,7 +276,7 @@ export class TopicService {
           lang,
         },
       )
-      .where(opts)
+      .leftJoinAndSelect(`topic.image`, `image`)
       .orderBy('topic.key', 'ASC');
 
     return paginate<Topic>(queryBuilder, options);
@@ -305,8 +301,8 @@ export class TopicService {
             lang,
           },
       )
-      .select('userToTopics.topicKey, topicTranslation.name')
-      .groupBy('userToTopics.topicKey, topicTranslation.name')
+      .select('userToTopics.topicKey, topicTranslation.name, topic.image')
+      .groupBy('userToTopics.topicKey, topicTranslation.name, topic.image')
       .limit(4)
       .orderBy('COUNT(userToTopics.topicKey)', 'DESC')
       .getRawMany()

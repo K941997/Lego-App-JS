@@ -10,7 +10,7 @@ import { UserHighlightWords } from './entities/user-highlight-word.entity';
 import { UserHighlightWordsRepository } from './repositories/user-highlight-words.repository';
 
 @Injectable()
-export class HighlightService {
+export class UserHighlightService {
   constructor(
     private userHighlightWordRepo: UserHighlightWordsRepository,
     private evdictRepo: EvDictRepository,

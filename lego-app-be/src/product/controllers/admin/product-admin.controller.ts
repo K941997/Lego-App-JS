@@ -17,7 +17,7 @@ import { Pagination } from 'nestjs-typeorm-paginate';
 import { FindAllProductsAdminDto } from '../../dtos/admin/find-all-products-admin.dto';
 import { FindOneProductAdminDto } from '../../dtos/admin/find-one-product-admin.dto';
 
-@Controller('admin/products')
+@Controller('admin/products') //localhost:5000/api/admin/products/
 export class ProductAdminController {
   constructor(private readonly productAdminService: ProductAdminService) {}
 
@@ -52,7 +52,7 @@ export class ProductAdminController {
   @Get(':slug')
   async findOneProductAdmin(
     @Param('slug') slug: string,
-    @Query() params: FindOneProductAdminDto,
+    @Query() params: FindOneProductAdminDto, //nếu có multilanguage thì thêm vào DTO GetOne
   ) {
     return this.productAdminService.findOneProductAdmin(slug);
   }

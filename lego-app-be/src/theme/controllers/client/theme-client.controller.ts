@@ -1,7 +1,7 @@
 import { Controller, Get, Param, Query } from '@nestjs/common';
 import { ThemeClientService } from './../../services/client/theme-client.service';
 import { ThemeEntity } from './../../entities/theme.entity';
-import { BooleanEnum } from '../../../commons/constants/global.constant';
+import { BooleanEnum } from '../../../commons/enums/global.constant';
 import { Pagination } from 'nestjs-typeorm-paginate';
 import { FindOneThemeClientDto } from '../../../theme/dtos/client/find-one-theme-client-dto';
 import { FindAllThemesClientDto } from '../../../theme/dtos/client/find-all-themes-client.dto';

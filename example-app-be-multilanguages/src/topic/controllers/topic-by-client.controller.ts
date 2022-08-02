@@ -3,7 +3,7 @@ import {
   Get, Query
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
-import { BooleanEnum, LangEnum } from '../../common/constants/global.constant';
+import { LangEnum } from '../../common/constants/global.constant';
 import { FindManyTopicDtoClient } from '../dto/find-topic-client.dto';
 import { TopicService } from '../topic.service';
 
@@ -24,8 +24,6 @@ export class TopicByClientController {
       params.lang = LangEnum.En;
     }
 
-    params.enabled = BooleanEnum.FALSE;
-
     //NoPagination:
     if (!page) return this.topicService.findAllByClientNoPagination(params);
 
@@ -34,7 +32,7 @@ export class TopicByClientController {
       {
         page: Number(page),
         limit: Number(limit),
-        route: `http://localhost:${process.env.PORT}/client/topics?lang=${params.lang}&enabled=${params.enabled}`,
+        route: `http://localhost:${process.env.PORT}/client/topics?lang=${params.lang}`,
       },
       params,
     );

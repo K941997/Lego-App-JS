@@ -9,9 +9,18 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { UtilsModule } from '../utils-module/utils.module';
 import { LevelRepository } from './repositories/topic.repository';
 import { LevelTranslationRepository } from './repositories/topic-translation.repository';
+import { VideosRepository } from '../videos/repositories/videos.repository';
+import { UserRepository } from '../user/repository/user.repository';
+import { AudioRepository } from '../audio/repository/audio.repository';
 
 @Module({
-  imports: [UtilsModule, TypeOrmModule.forFeature([LevelRepository, LevelTranslationRepository])], //UtilsModule has i18n
+  imports: [UtilsModule, TypeOrmModule.forFeature([
+    LevelRepository, 
+    LevelTranslationRepository, 
+    VideosRepository, 
+    UserRepository, 
+    AudioRepository
+  ])], //UtilsModule has i18n
   controllers: [LevelAdminController, LevelClientController],
   providers: [LevelService],
 })

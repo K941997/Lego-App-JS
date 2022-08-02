@@ -1,3 +1,4 @@
+# (Đã xong) mỗi topic dùng mỗi image khác nhau, vì là mối quan hệ relation 1-1
 # (Đã xong) Hiển thị 4 cái topics nhiều người chọn nhất, chưa xong vì cần phải CRUD thêm image topic (Đã xong vì fe sẽ hardcode hình ảnh)
     - Dùng querybuilder:
         async findFeatureTopics(
@@ -26,6 +27,8 @@
             return queryBuilder;
         } 
 # (Đã xong) TH3: Muốn xóa topic thì phải xóa từng audio (TH1: Xóa Topic -> Xóa luôn các audio, TH2: Xóa Topic -> Không xóa audio):
+
+# (Đã xong) Tạo Audio:
     + (Chưa xong) Test softDelete: Tạo 1 cái fake Audio qua swagger: localhost:5000/api/* -> /audio
     + (Chưa xong) Muốn tạo 1 Audio phải tạo 1 File
         + Muốn tạo 1 File phải Post qua localhost:5000/api/file/presigned-url (để lấy fileId)

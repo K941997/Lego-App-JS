@@ -8,8 +8,4 @@ import PaginateDto from '../../common/dtos/paginate.dto';
 export class FindManyTopicDtoClient extends PaginateDto {
   @IsValidEnumString({ enum: LangEnum, required: false })
   lang?: LangEnum; //lang=en
-
-  @IsValidNumber() //can't use IsValidEnumNumber()
-  @IsOptional()
-  enabled?: BooleanEnum;
 }

@@ -24,11 +24,7 @@ export class FileController {
   @ApiBody({
     schema: {
       type: 'object',
-      properties: {
-        type: {
-          type: 'string',
-        },
-      },
+      properties: { type: { type: 'string' } },
     },
   })
   @ApiOperation({ summary: 'Upload new file' })
@@ -42,11 +38,7 @@ export class FileController {
   @ApiBody({
     schema: {
       type: 'object',
-      properties: {
-        url: {
-          type: 'string',
-        },
-      },
+      properties: { url: { type: 'string' } },
     },
   })
   @Post('upload-image')

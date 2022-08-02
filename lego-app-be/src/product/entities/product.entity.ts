@@ -11,8 +11,8 @@ import {
 import {
   BooleanEnum,
   StatusEnum,
-} from '../../commons/constants/global.constant';
-import { ProductsToCategoriesEntity } from './products-to-categories.entity';
+} from '../../commons/enums/global.constant';
+import { ProductToCategoryEntity } from './product-to-category.entity';
 import { ThemeEntity } from './../../theme/entities/theme.entity';
 
 @Entity({ name: 'product' })
@@ -48,7 +48,7 @@ export class ProductEntity extends BaseEntity {
   @Column({ enum: StatusEnum, default: StatusEnum.AVAILABLE })
   status: StatusEnum;
 
-  //todo: Themes 1-n:
+  //todo: Themes 1-n 1-1:
   @Column({ name: 'theme_key', nullable: true })
   themeKey: string;
 
@@ -56,13 +56,13 @@ export class ProductEntity extends BaseEntity {
   @JoinColumn({ name: 'theme_key', referencedColumnName: 'key' }) //@JoinColumn nên cho vào @ManyToOne
   theme: ThemeEntity;
 
-  //todo: Categories n-n
+  //todo: Categories n-n 1-n:
   @OneToMany(
-    () => ProductsToCategoriesEntity,
-    (productsToCategories) => productsToCategories.product,
+    () => ProductToCategoryEntity,
+    (productToCategory) => productToCategory.product,
     {
       cascade: ['insert'], //cascade nên cho vào @OneToMany
     },
   )
-  productsToCategories: ProductsToCategoriesEntity[];
+  productToCategory: ProductToCategoryEntity[];
 }

@@ -31,8 +31,6 @@ export class LevelClientController {
       params.lang = LangEnum.En;
     }
 
-    params.enabled = BooleanEnum.FALSE;
-
     //NoPagination:
     if (!page) return this.levelService.findAllByClientNoPagination(params);
 
@@ -41,7 +39,7 @@ export class LevelClientController {
       {
         page: Number(page),
         limit: Number(limit),
-        route: `http://localhost:${process.env.PORT}/client/levels?lang=${params.lang}&enabled=${params.enabled}`,
+        route: `http://localhost:${process.env.PORT}/client/levels?lang=${params.lang}`,
       },
       params,
     );

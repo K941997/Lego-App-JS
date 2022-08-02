@@ -1,4 +1,4 @@
-import { BooleanEnum } from '../../commons/constants/global.constant';
+import { BooleanEnum } from '../../commons/enums/global.constant';
 import { Column, Entity, PrimaryColumn, OneToMany } from 'typeorm';
 import { BaseEntity } from './../../commons/entities/base.entity';
 import { ProductEntity } from './../../product/entities/product.entity';

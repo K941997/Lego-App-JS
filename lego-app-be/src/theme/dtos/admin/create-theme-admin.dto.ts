@@ -10,7 +10,7 @@ import {
 import {
   BooleanEnum,
   StatusEnum,
-} from '../../../commons/constants/global.constant';
+} from '../../../commons/enums/global.constant';
 import { IsDefined } from 'class-validator';
 import { Type } from 'class-transformer';
 

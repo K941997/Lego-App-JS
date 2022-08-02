@@ -1,4 +1,8 @@
-###### Solution Problem:
+###### Solution Problems:
+# (Problems) Relations:
+- Themes (1 - n) Products
+- Products (n - n) Categories -> tạo trung gian productToCategory
+
 # (Problems) Repository:
 - Repository Custom 0.2 không hoạt động bản TypeOrm 0.3.0
 - Tạo Repository Custom 0.3:
@@ -13,44 +17,49 @@
 - existProductName? (vì unique)
 - existThemeKey? (vì relation)
 - tạo slug theo key
+- (optional) with multilanguages
 # (Problems) READ ALL:
 - Hiển thị route phải để các slug, enabled, status có giá trị, ko được undefined (where(() => {if else}))
 - Pagination limit = 10 phải đếm theo productKey chứ ko phải productsToCategoriesKey (chia nhỏ ra)
 - (optional) enabled = 1 hiện cho client, enabled = 1, -1 hiện cho admin
 - (optional) hiện tất cả relation liên quan
 - (optional) Client Không có GETALL Products, chỉ có GETONE Product
+- (optional) with multilanguages
+- (optional) Client: GET Recommended For You Products Client (Lấy 12 cái Products từ các Themes khác nhau, thông qua lượt xem, yêu thích)
+- (optional) Client: GET Bestsellers Products Client (Lấy 6 cái Products xếp theo lượt user mua vd: usersToProducts)
+- (optional) Client: GET Offers and Promotions Themes Client (Lấy 3 cái Themes createdAt mới nhất)
+- (optional) Client: GET Read All About It Categories Client (Lấy 4 cái Categories createdAt mới nhất)
+- (optional) Client: GET FEATURED SETS Products Client: (Lấy 13 cái Products createdAt mới nhất)
 # (Problems) READ ONE: (slug)
 - (optional) enabled = 1 hiện cho client, enbaled = 1, -1 hiện cho admin
 - (optional) hiện tất cả relation liên quan
 - (optional) Client GETONE Product -> show thông tin 1 Product
 - (optional) Client GETONE Theme -> show Theme's Products có Pagination, Sort
 - (optional) Client GETONE Category -> show Category's Products có Pagination, Sort
+- (optional) with multilanguages
 # (Problems) UPDATE: (key)
 - check existProduct?
 - check existProductName by other Product?
 - check existThemeKey? (các relation liên quan có tồn tại?)
+- (optional) with multilanguages
 # (Problems) DELETE: (key)
 - check existProduct?
 - softDelete Product
-- (optional) softDelete MultiLanguages
+- (optional) softDelete multilanguages
 - (optional) softDelete các relation liên quan
 
 # (Problems) DELETE MULTIPLES: (keys[])
 - check existProducts?
 - softDelete Products
-- (optional) softDelete MultiLanguages
+- (optional) softDelete multilanguages
 - (optional) softDelete các relation liên quan
 - (Đã xong) SoftDelete Multiples Theme bị lỗi chỉ xóa cái đầu tiên (Do không nhập đúng url) (Phải nhập localhost:3000/api/admin/themes?keys=theme a,theme d,theme l thì mới được)
 
-# (Problems) OTHERS:
-- Client: GET Recommended For You Products Client (Lấy 12 cái Products từ các Themes khác nhau, thông qua lượt xem, yêu thích)
-- Client: GET Bestsellers Products Client (Lấy 6 cái Products xếp theo lượt user mua vd: usersToProducts)
-- Client: GET Offers and Promotions Themes Client (Lấy 3 cái Themes createdAt mới nhất)
-- Client: GET Read All About It Categories Client (Lấy 4 cái Categories createdAt mới nhất)
-- Client: GET FEATURED SETS Products Client: (Lấy 13 cái Products createdAt mới nhất)
-- Authentication
-- Authorization
-- Checkout
+# (Problems) image = file
+# (Problems) Authentication: (Xác thực)
+# (Problems) Authorization: (Phân quyền)
+# (Problems) Search (by User, History Search)
+# (Problems) Checkout: (Thanh toán)
 
 ###### 1. Settings:
 $ npm install -g @nestjs/cli
@@ -81,8 +90,8 @@ $ npm run start:dev (sử dụng sẽ auto nodemon)
 - Để tạo 1 Repository(Custom):
   Tạo file messages.repository.ts
 
-- Với SQL PostgreSQL (phải + không cần tạo Repository riêng): typeorm hỗ trợ ở Service lấy dữ liệu Database
-- Với NoSQL MongoDB (phải có Repository riêng): không có typeorm hỗ trợ ở Service để lấy dữ liệu Database
+- Với SQL PostgreSQL (phải + không cần tạo Repository riêng): typeorm hỗ trợ repository ở Service lấy dữ liệu Database
+- Với NoSQL MongoDB (phải có Repository riêng): không có typeorm hỗ trợ repository ở Service để lấy dữ liệu Database
 
 ###### 4. GlobalPrefix:
 - main.ts:
