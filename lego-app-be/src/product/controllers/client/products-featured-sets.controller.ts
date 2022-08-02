@@ -1,6 +1,6 @@
 import { Controller, Get, Query } from '@nestjs/common';
 import { ProductClientService } from '../../../product/services/client/product-client.service';
-import { BooleanEnum } from '../../../commons/enums/global.constant';
+import { BooleanEnum } from '../../../commons/enums/global.enum';
 import { FindProductsFeaturedSets } from '../../../product/dtos/client/find-products-featured-sets.dto';
 
 @Controller('client/products-featured-sets')

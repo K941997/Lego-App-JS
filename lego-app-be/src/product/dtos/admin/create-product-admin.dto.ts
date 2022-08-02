@@ -9,10 +9,7 @@ import {
   ArrayMaxSize,
   ArrayUnique,
 } from 'class-validator';
-import {
-  BooleanEnum,
-  StatusEnum,
-} from '../../../commons/enums/global.constant';
+import { BooleanEnum, StatusEnum } from '../../../commons/enums/global.enum';
 import { IsDefined } from 'class-validator';
 import { Type } from 'class-transformer';
 import { ArrayMinSize } from 'class-validator';
@@ -65,9 +62,10 @@ export class CreateProductAdminDto {
   themeKey: string;
 
   @IsString()
-  @ArrayMinSize(1)
+  // @ArrayMinSize(1)
   @ArrayMaxSize(100)
   @ArrayUnique()
   @IsOptional()
+  // @IsNotEmpty()
   categoryKeys: string[];
 }

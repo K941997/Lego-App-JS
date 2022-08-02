@@ -14,10 +14,10 @@ export class ProductToCategoryEntity extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ name: 'product_key' })
+  @Column({ name: 'product_key', nullable: true })
   productKey: string;
 
-  @Column({ name: 'category_key' })
+  @Column({ name: 'category_key', nullable: true })
   categoryKey: string;
 
   @ManyToOne(() => ProductEntity, (product) => product.productToCategory, {

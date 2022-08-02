@@ -9,7 +9,7 @@ import {
   ArrayMaxSize,
   ArrayUnique,
 } from 'class-validator';
-import { BooleanEnum } from '../../../commons/enums/global.constant';
+import { BooleanEnum } from '../../../commons/enums/global.enum';
 
 export class CreateCategoryAdminDto {
   @IsString()

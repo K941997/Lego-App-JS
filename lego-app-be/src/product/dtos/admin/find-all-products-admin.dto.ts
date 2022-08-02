@@ -9,10 +9,7 @@ import {
   IsEnum,
   IsDefined,
 } from 'class-validator';
-import {
-  BooleanEnum,
-  StatusEnum,
-} from '../../../commons/enums/global.constant';
+import { BooleanEnum, StatusEnum } from '../../../commons/enums/global.enum';
 
 export class FindAllProductsAdminDto {
   // export enum BooleanEnum {

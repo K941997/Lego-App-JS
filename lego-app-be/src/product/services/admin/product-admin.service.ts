@@ -77,7 +77,7 @@ export class ProductAdminService {
       throw new NotFoundException('Not Found Theme');
     }
 
-    //n-n 1-n:
+    //!n-n 1-n: (Cách Trí làm): (Chưa xong)
     const productToCategory = categoryKeys.map((categoryKey) =>
       this.productToCategoryRepository.create({
         categoryKey,
@@ -95,6 +95,30 @@ export class ProductAdminService {
       themeKey,
       productToCategory,
     });
+
+    //!n-n 1-n: (Cách mình làm - Trong TaskManagement): (Chưa xong)
+    // const newProduct = this.productRepository.create(createProductAdminDto);
+
+    // newProduct.productToCategory = [];
+    // await this.productRepository.save(newProduct);
+    // //Tạo Product có 2 categories giống nhau, trả về 1 category:
+    // const arr = [];
+    // for (let i = 0; i < categoryKeys.length; i++) {
+    //   if (arr.indexOf(categoryKeys[i]) === -1) arr.push(categoryKeys[i]);
+    // }
+    // console.log(arr);
+    // //Tạo Task chứa Categories có giá trị:
+    // for (let i = 0; i < arr.length; i++) {
+    //   const category = await this.categoryRepository.findOneBy(arr[i]);
+    //   if (category) {
+    //     const productToCategory = new ProductToCategoryEntity();
+    //     productToCategory.productKey = newProduct.key;
+    //     productToCategory.categoryKey = category.key;
+
+    //     newProduct.productToCategory.push(productToCategory);
+    //   }
+    // }
+
     newProduct.slug = this.slugify(key);
 
     return this.productRepository.save(newProduct);

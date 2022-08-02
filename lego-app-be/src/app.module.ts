@@ -31,10 +31,7 @@ require('dotenv').config();
     ProductModule,
     CategoryModule,
     ThemeModule,
-<<<<<<< HEAD
     SearchModule,
-=======
->>>>>>> main
   ],
   controllers: [AppController],
   providers: [AppService],

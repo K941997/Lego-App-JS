@@ -1,7 +1,7 @@
 import { Type } from 'class-transformer';
 import { IsEnum, IsNumber, IsOptional } from 'class-validator';
 import { Default } from '../../../commons/decorators/default-value.decorator';
-import { BooleanEnum } from 'src/commons/constants/global.constant';
+import { BooleanEnum } from 'src/commons/enums/global.enum';
 
 export class FindOneProductClientDto {
   @IsEnum(BooleanEnum)

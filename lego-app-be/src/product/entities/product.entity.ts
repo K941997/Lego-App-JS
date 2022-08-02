@@ -8,10 +8,7 @@ import {
   PrimaryColumn,
   PrimaryGeneratedColumn,
 } from 'typeorm';
-import {
-  BooleanEnum,
-  StatusEnum,
-} from '../../commons/enums/global.constant';
+import { BooleanEnum, StatusEnum } from '../../commons/enums/global.enum';
 import { ProductToCategoryEntity } from './product-to-category.entity';
 import { ThemeEntity } from './../../theme/entities/theme.entity';
 
@@ -62,6 +59,7 @@ export class ProductEntity extends BaseEntity {
     (productToCategory) => productToCategory.product,
     {
       cascade: ['insert'], //cascade nên cho vào @OneToMany
+      nullable: true,
     },
   )
   productToCategory: ProductToCategoryEntity[];

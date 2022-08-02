@@ -7,7 +7,7 @@ import {
 } from 'typeorm';
 import { BaseEntity } from './../../commons/entities/base.entity';
 import { ProductToCategoryEntity } from '../../product/entities/product-to-category.entity';
-import { BooleanEnum } from '../../commons/enums/global.constant';
+import { BooleanEnum } from '../../commons/enums/global.enum';
 
 @Entity({ name: 'category' })
 export class CategoryEntity extends BaseEntity {

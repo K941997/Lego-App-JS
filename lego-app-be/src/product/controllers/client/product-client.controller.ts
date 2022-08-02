@@ -14,7 +14,7 @@ import { ProductEntity } from '../../entities/product.entity';
 import { Pagination } from 'nestjs-typeorm-paginate';
 import { ProductClientService } from '../../services/client/product-client.service';
 import { FindAllProductsClientDto } from '../../dtos/client/find-all-products-client.dto';
-import { BooleanEnum } from 'src/commons/constants/global.constant';
+import { BooleanEnum } from '../../../commons/enums/global.enum';
 import { FindOneProductClientDto } from '../../dtos/client/find-one-product-client-dto';
 
 @Controller('client/products')

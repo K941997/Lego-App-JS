@@ -7,10 +7,7 @@ import {
   IsNumber,
   IsEnum,
 } from 'class-validator';
-import {
-  BooleanEnum,
-  StatusEnum,
-} from '../../../commons/enums/global.constant';
+import { BooleanEnum, StatusEnum } from '../../../commons/enums/global.enum';
 import { IsDefined } from 'class-validator';
 import { Type } from 'class-transformer';
 
