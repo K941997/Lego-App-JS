@@ -5,7 +5,7 @@ import {
   BooleanEnum,
   SortDirectionEnum,
   SortKeyEnum,
-} from '../../../commons/enums/global.constant';
+} from '../../../commons/enums/global.enum';
 
 export class FindOneThemeClientDto {
   @IsEnum(BooleanEnum)

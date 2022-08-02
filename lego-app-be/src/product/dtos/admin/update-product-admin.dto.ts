@@ -12,7 +12,7 @@ import {
   ArrayUnique,
   IsArray,
 } from 'class-validator';
-import { BooleanEnum, StatusEnum } from 'src/commons/constants/global.constant';
+import { BooleanEnum, StatusEnum } from '../../../commons/enums/global.enum';
 import { CreateProductAdminDto } from './create-product-admin.dto';
 
 export class UpdateOneProductAdminDto {

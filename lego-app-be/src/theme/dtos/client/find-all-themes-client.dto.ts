@@ -12,7 +12,7 @@ import {
 import {
   BooleanEnum,
   StatusEnum,
-} from '../../../commons/enums/global.constant';
+} from '../../../commons/enums/global.enum';
 
 export class FindAllThemesClientDto {
   // export enum BooleanEnum {

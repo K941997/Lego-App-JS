@@ -9,7 +9,6 @@ import { ThemeEntity } from './../../entities/theme.entity';
 import { FindOneThemeClientDto } from './../../dtos/client/find-one-theme-client-dto';
 import { FindAllThemesClientDto } from '../../../theme/dtos/client/find-all-themes-client.dto';
 import { ProductRepository } from './../../../product/repositories/product.repository';
-import { SortKeyEnum } from 'src/commons/constants/global.constant';
 
 @Injectable()
 export class ThemeClientService {
